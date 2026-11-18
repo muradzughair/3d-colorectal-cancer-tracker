@@ -5,6 +5,7 @@ import Header from './components/Header'
 import ColonViewer from './components/ColonViewer'
 import FindingsList from './components/FindingsList'
 import ImagePanel from './components/ImagePanel'
+import TimeSlider from './components/TimeSlider'
 import { newId } from './lib/findings'
 import type { SegmentId } from './data/segments'
 import type { Finding, FindingKind } from './types'
@@ -85,6 +86,13 @@ export default function App() {
             <span className="count">{findings.length}</span>
           </div>
           <FindingsList findings={findings} selectedId={selectedId} onSelect={select} onRemove={remove} />
+        </section>
+
+        <section className="panel slider-panel">
+          <div className="panel-head">
+            <h2>Time slider: what if the polyp is left in place?</h2>
+          </div>
+          <TimeSlider findings={findings} selectedId={selectedId} />
         </section>
       </main>
 

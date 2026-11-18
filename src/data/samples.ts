@@ -5,12 +5,12 @@ import type { ImageType } from '../types'
 export interface Sample {
   file: string
   label: string // full name, shown under the picture and in the findings list
-  short: string // short name under the small thumbnail
+  short: string // short name next to the small thumbnail
   type: ImageType
 }
 
 export const SAMPLES: Sample[] = [
   { file: 'colonoscopy-1.png', label: 'Colonoscopy sample 1', short: 'Sample 1', type: 'colonoscopy' },
   { file: 'colonoscopy-2.png', label: 'Colonoscopy sample 2', short: 'Sample 2', type: 'colonoscopy' },
-  { file: 'ct-1.png', label: 'CT sample', short: 'CT sample', type: 'ct' },
+  { file: 'ct-1.png', label: 'CT sample', short: 'CT scan', type: 'ct' },
 ]

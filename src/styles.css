@@ -48,7 +48,7 @@ input {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  min-height: 680px;
+  min-height: 640px;
 }
 
 .header {
@@ -93,8 +93,8 @@ input {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(300px, 27%) 1fr minmax(260px, 23%);
-  grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-columns: minmax(330px, 27%) 1fr minmax(260px, 23%);
+  grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas:
     'images viewer findings'
     'slider slider slider';
@@ -210,6 +210,7 @@ input {
 
 .pin {
   position: absolute;
+  z-index: 2;
   top: 0;
   left: 0;
   pointer-events: auto;
@@ -264,7 +265,7 @@ input {
 }
 
 .pin.is-selected {
-  z-index: 2;
+  z-index: 3;
 }
 
 .pin.is-selected .pin-head {
@@ -283,6 +284,7 @@ input {
 
 .pin-caption {
   position: absolute;
+  z-index: 1;
   top: 0;
   left: 0;
   padding: 2px 7px;
@@ -464,6 +466,7 @@ input {
 
 .type-switch {
   flex: 1;
+  min-width: 0;
   display: flex;
   padding: 3px;
   border-radius: 9px;
@@ -473,7 +476,8 @@ input {
 
 .type-switch button {
   flex: 1;
-  padding: 4px 8px;
+  padding: 4px 6px;
+  white-space: nowrap;
   border: none;
   border-radius: 7px;
   font-size: 13px;
@@ -512,23 +516,29 @@ input {
 
 .sample-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .sample-thumb {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 4px 6px 4px 4px;
+  gap: 5px;
+  padding: 3px 4px 3px 3px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  font-size: 12px;
+  min-width: 0;
+  font-size: 11.5px;
   white-space: nowrap;
   text-align: left;
   color: var(--muted);
   background: #ffffff;
   cursor: pointer;
+}
+
+.sample-thumb span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sample-thumb:hover {
@@ -543,8 +553,8 @@ input {
 
 .sample-thumb img {
   flex: none;
-  width: 36px;
-  height: 30px;
+  width: 30px;
+  height: 26px;
   object-fit: cover;
   border-radius: 5px;
   background: #000;
@@ -737,4 +747,125 @@ input {
   color: #ffffff;
   background: rgba(28, 39, 51, 0.82);
   pointer-events: none;
+}
+
+/* ---------- Time slider ---------- */
+
+.time-slider {
+  display: grid;
+  grid-template-columns: minmax(300px, 30%) 1fr;
+  gap: 24px;
+  padding: 0 16px 14px;
+}
+
+.slider-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slider-subject {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.speed-row .type-switch {
+  flex: 1;
+}
+
+/* The slider bar: filled (blue) up to the handle, grey after it. */
+.range {
+  width: 100%;
+  height: 6px;
+  margin: 6px 0 0;
+  border-radius: 999px;
+  appearance: none;
+  background: linear-gradient(to right, var(--accent) var(--fill), #dfe4ea var(--fill));
+  cursor: pointer;
+}
+
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  background: var(--accent);
+  box-shadow: 0 1px 4px rgba(16, 24, 40, 0.35);
+}
+
+.range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  background: var(--accent);
+  box-shadow: 0 1px 4px rgba(16, 24, 40, 0.35);
+}
+
+.range-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -6px;
+  font-size: 11.5px;
+}
+
+.stage {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.stage-years {
+  flex: none;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.disclaimer {
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #6d5a1f;
+  background: #fbf6e6;
+  border: 1px solid #f0e4bd;
+}
+
+.wall-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: start;
+  gap: 16px;
+}
+
+.wall-panels figure {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  margin: 0;
+}
+
+.wall-panels figcaption {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.wall {
+  width: 100%;
+  height: clamp(110px, 21vh, 200px);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #f8f4f3;
 }
