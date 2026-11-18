@@ -204,3 +204,243 @@ input {
   background: rgba(255, 255, 255, 0.78);
   border-radius: 4px;
 }
+
+/* ---------- Pins on the 3D colon ---------- */
+
+.pin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+/* The round head sits just above the point, with a small tip touching the surface. */
+.pin-head {
+  position: absolute;
+  left: 0;
+  bottom: 6px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.35);
+}
+
+.pin-head::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top: 5px solid #ffffff;
+}
+
+.pin-polyp .pin-head {
+  background: var(--polyp);
+}
+
+.pin-tumor .pin-head {
+  background: var(--tumor);
+}
+
+/* A single tumor has no number: show a small white dot instead. */
+.pin-tumor .pin-head:empty::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.pin.is-selected {
+  z-index: 2;
+}
+
+.pin.is-selected .pin-head {
+  min-width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.pin-polyp.is-selected .pin-head {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25), 0 1px 3px rgba(16, 24, 40, 0.35);
+}
+
+.pin-tumor.is-selected .pin-head {
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.25), 0 1px 3px rgba(16, 24, 40, 0.35);
+}
+
+.pin-caption {
+  position: absolute;
+  left: 18px;
+  bottom: 12px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+}
+
+/* Pins on the far side of the colon are faded. */
+.pin.is-behind {
+  opacity: 0.35;
+}
+
+/* ---------- Findings list ---------- */
+
+.count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--muted);
+  background: var(--bg);
+}
+
+.empty-note {
+  padding: 4px 16px 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.findings-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0 10px 10px;
+  list-style: none;
+}
+
+.finding {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 10px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.finding:hover {
+  background: #f7f9fb;
+}
+
+.finding-polyp.is-selected {
+  background: var(--polyp-soft);
+  border-color: #c9d8fb;
+}
+
+.finding-tumor.is-selected {
+  background: var(--tumor-soft);
+  border-color: #f6caca;
+}
+
+.finding-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.badge-polyp {
+  background: var(--polyp);
+}
+
+.badge-tumor {
+  background: var(--tumor);
+}
+
+.badge-tumor:empty::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.finding-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.finding-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.finding-top strong {
+  font-weight: 600;
+}
+
+.source-tag {
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.source-ai {
+  color: #3d4b5c;
+  background: #eef1f5;
+}
+
+.source-manual {
+  color: #5a4a1a;
+  background: #f6f0de;
+}
+
+.finding-meta {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.finding-position {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.remove-button {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  color: var(--tumor);
+  background: var(--tumor-soft);
+}

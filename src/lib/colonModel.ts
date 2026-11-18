@@ -83,6 +83,22 @@ function findAnchors(meshes: THREE.Mesh[]): Record<SegmentId, SurfacePoint> {
   return anchors
 }
 
+// A picture does not tell us exactly where in a segment a finding is, so we pick an
+// estimated point: the middle of the segment's front, and for the 2nd, 3rd... finding in
+// the same segment, a little further along so the pins do not sit on top of each other.
+export function estimatedPoint(model: ColonModel, segment: SegmentId, index: number): SurfacePoint {
+  const part = SEGMENTS.find((s) => s.id === segment)!.part
+  const mesh = model.meshes.find((m) => m.name === part)!
+  const box = new THREE.Box3().setFromObject(mesh)
+  const size = box.getSize(new THREE.Vector3())
+  const target = box.getCenter(new THREE.Vector3())
+  // Steps along the longer side of the segment: 0, +1, -1, +2, -2 ...
+  const step = Math.ceil(index / 2) * (index % 2 === 1 ? 1 : -1) * 0.15
+  if (size.x > size.y) target.x += step * size.x
+  else target.y += step * size.y
+  return frontPointNear(mesh, target)
+}
+
 // Centre of a mesh's bounding box, in scene coordinates.
 export function getMeshCenter(mesh: THREE.Mesh): THREE.Vector3 {
   return new THREE.Box3().setFromObject(mesh).getCenter(new THREE.Vector3())
