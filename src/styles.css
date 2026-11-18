@@ -1,8 +1,23 @@
-/* Global page styles. */
+/* Page styles. Polyps are always blue, tumors are always red. */
 :root {
+  --bg: #f3f5f8;
+  --panel: #ffffff;
+  --border: #e2e7ee;
+  --text: #1c2733;
+  --muted: #667383;
+  --accent: #1f4e79;
+  --polyp: #2563eb;
+  --polyp-soft: #e8efff;
+  --tumor: #dc2626;
+  --tumor-soft: #fdecec;
+  --radius: 12px;
+
   font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
-  color: #1f2a37;
-  background: #f5f7fa;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -11,4 +26,181 @@
 
 body {
   margin: 0;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+select,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---------- Page frame ---------- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 680px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 24px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header h1 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+
+.demo-tag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8a5a00;
+  background: #fff4dc;
+  border: 1px solid #f3dfae;
+}
+
+.header-notice {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(300px, 27%) 1fr minmax(260px, 23%);
+  grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-areas:
+    'images viewer findings'
+    'slider slider slider';
+  gap: 16px;
+  padding: 16px 24px;
+}
+
+.footer {
+  padding: 8px 24px 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- Panels ---------- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px 10px;
+}
+
+.panel-head h2 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.images-panel {
+  grid-area: images;
+}
+
+.viewer-panel {
+  grid-area: viewer;
+}
+
+.findings-panel {
+  grid-area: findings;
+}
+
+.slider-panel {
+  grid-area: slider;
+}
+
+/* ---------- 3D colon ---------- */
+
+.colon-viewer {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0 12px 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 38%, #ffffff 0%, #f1f3f7 62%, #e7ebf1 100%);
+}
+
+.colon-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.colon-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* let mouse drags reach the 3D canvas */
+}
+
+.label-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.label-lines line {
+  stroke: #8f9aa8;
+  stroke-width: 0.8;
+}
+
+.label-lines circle {
+  fill: #5b6675;
+}
+
+.segment-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #455161;
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 4px;
 }
