@@ -704,11 +704,11 @@ input {
   border-radius: 50%;
 }
 
-.mark-button.mark-polyp::before {
+.mark-button-polyp::before {
   background: var(--polyp);
 }
 
-.mark-button.mark-tumor::before {
+.mark-button-tumor::before {
   background: var(--tumor);
 }
 
@@ -716,13 +716,13 @@ input {
   border-color: #b9c4d2;
 }
 
-.mark-button.mark-polyp.is-active {
+.mark-button-polyp.is-active {
   color: #ffffff;
   background: var(--polyp);
   border-color: var(--polyp);
 }
 
-.mark-button.mark-tumor.is-active {
+.mark-button-tumor.is-active {
   color: #ffffff;
   background: var(--tumor);
   border-color: var(--tumor);

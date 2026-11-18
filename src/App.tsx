@@ -58,13 +58,13 @@ export default function App() {
             <div className="mark-tools">
               <span>Mark by hand</span>
               <button
-                className={`mark-button mark-polyp${markMode === 'polyp' ? ' is-active' : ''}`}
+                className={`mark-button mark-button-polyp${markMode === 'polyp' ? ' is-active' : ''}`}
                 onClick={() => toggleMarkMode('polyp')}
               >
                 Polyp
               </button>
               <button
-                className={`mark-button mark-tumor${markMode === 'tumor' ? ' is-active' : ''}`}
+                className={`mark-button mark-button-tumor${markMode === 'tumor' ? ' is-active' : ''}`}
                 onClick={() => toggleMarkMode('tumor')}
               >
                 Tumor
