@@ -126,7 +126,8 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px 10px;
+  min-height: 46px;
+  padding: 8px 12px 6px 16px;
 }
 
 .panel-head h2 {
@@ -657,4 +658,83 @@ input {
   border: 1px solid var(--border);
   border-radius: 7px;
   background: #ffffff;
+}
+
+/* ---------- Manual marking ---------- */
+
+.mark-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.mark-tools span {
+  margin-right: 4px;
+}
+
+.mark-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.mark-button::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.mark-button.mark-polyp::before {
+  background: var(--polyp);
+}
+
+.mark-button.mark-tumor::before {
+  background: var(--tumor);
+}
+
+.mark-button:hover {
+  border-color: #b9c4d2;
+}
+
+.mark-button.mark-polyp.is-active {
+  color: #ffffff;
+  background: var(--polyp);
+  border-color: var(--polyp);
+}
+
+.mark-button.mark-tumor.is-active {
+  color: #ffffff;
+  background: var(--tumor);
+  border-color: var(--tumor);
+}
+
+.mark-button.is-active::before {
+  background: #ffffff;
+}
+
+.colon-viewer.is-marking .colon-canvas {
+  cursor: crosshair;
+}
+
+.mark-hint {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: #ffffff;
+  background: rgba(28, 39, 51, 0.82);
+  pointer-events: none;
 }

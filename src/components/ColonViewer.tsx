@@ -1,5 +1,6 @@
 // The 3D colon map: the model with segment labels and a pin for every finding.
-// The doctor can rotate (drag) and zoom (scroll).
+// The doctor can rotate (drag) and zoom (scroll). In marking mode, a click on the colon
+// places a manual mark; the segment comes from the part that was clicked.
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { createColonScene, type ColonScene } from '../lib/colonScene'
@@ -8,7 +9,7 @@ import { createLabels } from '../lib/labels'
 import { createPins } from '../lib/pins'
 import { describeFindings } from '../lib/findings'
 import { getSegment, type SegmentId } from '../data/segments'
-import type { Finding } from '../types'
+import type { Finding, FindingKind } from '../types'
 
 const MODEL_URL = '/models/colon.glb'
 
@@ -16,9 +17,11 @@ interface Props {
   findings: Finding[]
   selectedId: string | null
   onSelect: (id: string) => void
+  markMode: FindingKind | null // what a click on the colon adds (null = clicks do nothing)
+  onMark: (kind: FindingKind, segment: SegmentId, position: [number, number, number]) => void
 }
 
-export default function ColonViewer({ findings, selectedId, onSelect }: Props) {
+export default function ColonViewer({ findings, selectedId, onSelect, markMode, onMark }: Props) {
   const canvasHolder = useRef<HTMLDivElement>(null)
   const overlay = useRef<HTMLDivElement>(null)
   const view = useRef<ColonScene | null>(null)
@@ -29,6 +32,8 @@ export default function ColonViewer({ findings, selectedId, onSelect }: Props) {
   // Keep the latest click handler in a ref, so the 3D code (built once) always calls the current one.
   const onSelectRef = useRef(onSelect)
   onSelectRef.current = onSelect
+  const markRef = useRef({ markMode, onMark })
+  markRef.current = { markMode, onMark }
 
   // Build the 3D scene once when the component appears, and clean it up when it disappears.
   useEffect(() => {
@@ -53,8 +58,35 @@ export default function ColonViewer({ findings, selectedId, onSelect }: Props) {
       setLoaded(true)
     })
 
+    // Manual marking: a click (not a drag to rotate) on the colon adds a mark there.
+    const canvas = scene.renderer.domElement
+    let downX = 0
+    let downY = 0
+    const onPointerDown = (e: PointerEvent) => {
+      downX = e.clientX
+      downY = e.clientY
+    }
+    const onPointerUp = (e: PointerEvent) => {
+      const { markMode, onMark } = markRef.current
+      const moved = Math.hypot(e.clientX - downX, e.clientY - downY)
+      if (!markMode || !model.current || moved > 5) return
+      const rect = canvas.getBoundingClientRect()
+      const pointer = new THREE.Vector2(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -((e.clientY - rect.top) / rect.height) * 2 + 1,
+      )
+      const raycaster = new THREE.Raycaster()
+      raycaster.setFromCamera(pointer, scene.camera)
+      const hit = raycaster.intersectObjects(model.current.meshes, false)[0]
+      if (hit) onMark(markMode, hit.object.userData.segment, hit.point.toArray())
+    }
+    canvas.addEventListener('pointerdown', onPointerDown)
+    canvas.addEventListener('pointerup', onPointerUp)
+
     return () => {
       cancelled = true
+      canvas.removeEventListener('pointerdown', onPointerDown)
+      canvas.removeEventListener('pointerup', onPointerUp)
       disposeLabels()
       pinLayer.dispose()
       scene.dispose()
@@ -90,9 +122,10 @@ export default function ColonViewer({ findings, selectedId, onSelect }: Props) {
   }, [findings, selectedId, loaded])
 
   return (
-    <div className="colon-viewer">
+    <div className={`colon-viewer${markMode ? ' is-marking' : ''}`}>
       <div className="colon-canvas" ref={canvasHolder} />
       <div className="colon-overlay" ref={overlay} />
+      {markMode && <div className="mark-hint">Click on the colon to place the {markMode}.</div>}
     </div>
   )
 }

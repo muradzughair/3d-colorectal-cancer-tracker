@@ -56,7 +56,12 @@ export function createPins(overlay: HTMLElement, onClick: (id: string) => void) 
       const hit = raycaster.intersectObjects(meshes, false)[0]
       const hidden = hit !== undefined && hit.distance < distance - 0.03
       element.classList.toggle('is-behind', hidden)
-      if (data === captionFor) caption.style.transform = `translate(${x + 16}px, ${y - 30}px)`
+      if (data === captionFor) {
+        // Caption to the right of the pin, or to the left if it would run off the view.
+        const w = caption.offsetWidth
+        const left = x + 16 + w > width - 6 ? x - 16 - w : x + 16
+        caption.style.transform = `translate(${left}px, ${y - 30}px)`
+      }
     }
   }
 
