@@ -74,7 +74,7 @@ export default function ColonViewer({ findings, selectedId, onSelect }: Props) {
       } else {
         const index = countPerSegment[f.segment] ?? 0
         countPerSegment[f.segment] = index + 1
-        position = estimatedPoint(model.current!, f.segment, index).position
+        position = estimatedPoint(model.current!, f.segment, index)
       }
       const where = f.position ? 'exact position' : 'estimated position'
       return {

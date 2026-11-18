@@ -84,19 +84,50 @@ function findAnchors(meshes: THREE.Mesh[]): Record<SegmentId, SurfacePoint> {
 }
 
 // A picture does not tell us exactly where in a segment a finding is, so we pick an
-// estimated point: the middle of the segment's front, and for the 2nd, 3rd... finding in
-// the same segment, a little further along so the pins do not sit on top of each other.
-export function estimatedPoint(model: ColonModel, segment: SegmentId, index: number): SurfacePoint {
+// estimated point on the part of the segment you can see from the front. The 1st finding
+// goes near the middle; the 2nd, 3rd... go a little apart so pins don't sit on each other.
+const PIN_GAP = 0.16 // minimum distance between estimated pins in one segment (scene units)
+const visibleCache = new WeakMap<ColonModel, Map<SegmentId, THREE.Vector3[]>>() // computed once
+
+export function estimatedPoint(model: ColonModel, segment: SegmentId, index: number): THREE.Vector3 {
+  if (!visibleCache.has(model)) visibleCache.set(model, new Map())
+  const cache = visibleCache.get(model)!
+  if (!cache.has(segment)) cache.set(segment, visibleFrontPoints(model, segment))
+  const candidates = cache.get(segment)!
+
+  // Walk outwards from the middle, keeping only points far enough from those already used.
+  const chosen: THREE.Vector3[] = []
+  for (const point of candidates) {
+    if (chosen.every((c) => c.distanceTo(point) >= PIN_GAP)) chosen.push(point)
+    if (chosen.length > index) return point
+  }
+  return chosen[index % chosen.length] // tiny segment: share a spot
+}
+
+// Shoot straight rays from the front over a grid of points. Keep the points where the first
+// surface hit belongs to this segment (= visible from the front), sorted from the middle out.
+function visibleFrontPoints(model: ColonModel, segment: SegmentId): THREE.Vector3[] {
   const part = SEGMENTS.find((s) => s.id === segment)!.part
   const mesh = model.meshes.find((m) => m.name === part)!
   const box = new THREE.Box3().setFromObject(mesh)
-  const size = box.getSize(new THREE.Vector3())
-  const target = box.getCenter(new THREE.Vector3())
-  // Steps along the longer side of the segment: 0, +1, -1, +2, -2 ...
-  const step = Math.ceil(index / 2) * (index % 2 === 1 ? 1 : -1) * 0.15
-  if (size.x > size.y) target.x += step * size.x
-  else target.y += step * size.y
-  return frontPointNear(mesh, target)
+  const center = box.getCenter(new THREE.Vector3())
+  const raycaster = new THREE.Raycaster()
+  const forward = new THREE.Vector3(0, 0, -1)
+  const points: THREE.Vector3[] = []
+  const steps = 14
+
+  for (let i = 0; i <= steps; i++) {
+    for (let j = 0; j <= steps; j++) {
+      const x = box.min.x + ((box.max.x - box.min.x) * i) / steps
+      const y = box.min.y + ((box.max.y - box.min.y) * j) / steps
+      raycaster.set(new THREE.Vector3(x, y, 10), forward)
+      const hit = raycaster.intersectObjects(model.meshes, false)[0]
+      if (hit && hit.object === mesh) points.push(hit.point.clone())
+    }
+  }
+  // Fall back to any front-facing point if the segment is hidden from the front.
+  if (points.length === 0) points.push(frontPointNear(mesh, center).position)
+  return points.sort((a, b) => a.distanceTo(center) - b.distanceTo(center))
 }
 
 // Centre of a mesh's bounding box, in scene coordinates.

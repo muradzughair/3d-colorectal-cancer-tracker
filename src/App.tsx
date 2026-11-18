@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Header from './components/Header'
 import ColonViewer from './components/ColonViewer'
 import FindingsList from './components/FindingsList'
+import ImagePanel from './components/ImagePanel'
 import type { Finding } from './types'
 
 export default function App() {
@@ -18,11 +19,24 @@ export default function App() {
     if (selectedId === id) setSelectedId(null)
   }
 
+  // A picture was analysed: replace its old findings with the new ones.
+  const setImageFindings = (imageName: string, list: Finding[]) => {
+    setFindings((current) => [...current.filter((f) => f.imageName !== imageName), ...list])
+    setSelectedId(null)
+  }
+
   return (
     <div className="app">
       <Header />
 
       <main className="workspace">
+        <section className="panel images-panel">
+          <div className="panel-head">
+            <h2>Medical pictures</h2>
+          </div>
+          <ImagePanel findings={findings} onImageFindings={setImageFindings} />
+        </section>
+
         <section className="panel viewer-panel">
           <div className="panel-head">
             <h2>3D colon map</h2>

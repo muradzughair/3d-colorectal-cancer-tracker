@@ -14,6 +14,11 @@ export interface PinData {
 
 export function createPins(overlay: HTMLElement, onClick: (id: string) => void) {
   let pins: { data: PinData; element: HTMLDivElement }[] = []
+  // Caption for the selected pin. Added before the pins, so pins are drawn on top of it.
+  const caption = document.createElement('div')
+  caption.className = 'pin-caption'
+  overlay.appendChild(caption)
+  let captionFor: PinData | null = null
   const raycaster = new THREE.Raycaster()
   const screen = new THREE.Vector3()
   const direction = new THREE.Vector3()
@@ -26,16 +31,13 @@ export function createPins(overlay: HTMLElement, onClick: (id: string) => void) 
       element.className = `pin pin-${data.kind}${data.selected ? ' is-selected' : ''}`
       element.title = data.caption
       element.innerHTML = `<span class="pin-head">${data.text}</span>`
-      if (data.selected) {
-        const caption = document.createElement('span')
-        caption.className = 'pin-caption'
-        caption.textContent = data.caption
-        element.appendChild(caption)
-      }
       element.addEventListener('click', () => onClick(data.id))
       overlay.appendChild(element)
       return { data, element }
     })
+    captionFor = list.find((p) => p.selected) ?? null
+    caption.textContent = captionFor?.caption ?? ''
+    caption.style.display = captionFor ? 'block' : 'none'
   }
 
   // Called every frame: move each pin to its point on screen and fade it if the
@@ -54,8 +56,16 @@ export function createPins(overlay: HTMLElement, onClick: (id: string) => void) 
       const hit = raycaster.intersectObjects(meshes, false)[0]
       const hidden = hit !== undefined && hit.distance < distance - 0.03
       element.classList.toggle('is-behind', hidden)
+      if (data === captionFor) caption.style.transform = `translate(${x + 16}px, ${y - 30}px)`
     }
   }
 
-  return { set, update, dispose: () => pins.forEach((p) => p.element.remove()) }
+  return {
+    set,
+    update,
+    dispose: () => {
+      pins.forEach((p) => p.element.remove())
+      caption.remove()
+    },
+  }
 }
