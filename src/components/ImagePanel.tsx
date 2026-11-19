@@ -21,6 +21,9 @@ interface CurrentImage {
   type: ImageType
 }
 
+// Where the sample pictures are (works locally and on GitHub Pages).
+const SAMPLES_FOLDER = `${import.meta.env.BASE_URL}samples/`
+
 // A colonoscope cannot reach the appendix, so it is not in this list.
 const COLONOSCOPY_SEGMENTS = SEGMENTS.filter((s) => s.id !== 'appendix')
 
@@ -71,7 +74,7 @@ export default function ImagePanel({ findings, onImageFindings }: Props) {
 
   function pickSample(file: string) {
     const sample = SAMPLES.find((s) => s.file === file)!
-    analyse({ name: sample.label, url: `/samples/${sample.file}`, type: sample.type }, sample.file)
+    analyse({ name: sample.label, url: `${SAMPLES_FOLDER}${sample.file}`, type: sample.type }, sample.file)
   }
 
   function upload(file: File | undefined) {
@@ -114,7 +117,7 @@ export default function ImagePanel({ findings, onImageFindings }: Props) {
             onClick={() => pickSample(s.file)}
             title={s.label}
           >
-            <img src={`/samples/${s.file}`} alt="" />
+            <img src={`${SAMPLES_FOLDER}${s.file}`} alt="" />
             <span>{s.short}</span>
           </button>
         ))}

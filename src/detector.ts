@@ -17,7 +17,7 @@ export interface InputImage {
   url: string // address the browser can load the picture from
 }
 
-const RESULTS_URL = '/samples/results.json'
+const RESULTS_URL = `${import.meta.env.BASE_URL}samples/results.json`
 
 export async function detect(image: InputImage, type: ImageType): Promise<DetectionResult | null> {
   // A real model would load the pixels from image.url and use `type` to choose between

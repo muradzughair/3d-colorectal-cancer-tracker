@@ -29,6 +29,12 @@ Then open the address it prints (usually http://localhost:5173).
 
 To check that everything builds: `npm run build`.
 
+## Hosting on GitHub Pages
+
+The workflow in `.github/workflows/deploy.yml` builds the app and publishes it every time you push to `main`.
+
+One-time setup: in the repository on GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**. The site is then at `https://<your-username>.github.io/<repository-name>/`.
+
 ## Folder structure
 
 ```

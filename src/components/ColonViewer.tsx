@@ -11,7 +11,7 @@ import { describeFindings } from '../lib/findings'
 import { getSegment, type SegmentId } from '../data/segments'
 import type { Finding, FindingKind } from '../types'
 
-const MODEL_URL = '/models/colon.glb'
+const MODEL_URL = `${import.meta.env.BASE_URL}models/colon.glb`
 
 interface Props {
   findings: Finding[]
