@@ -7,6 +7,7 @@ import './styles/viewer.css'
 import './styles/colon-page.css'
 import './styles/pictures.css'
 import './styles/pages.css'
+import './styles/patient.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

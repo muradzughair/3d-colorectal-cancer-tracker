@@ -23,6 +23,17 @@ export interface Finding {
   position?: [number, number, number]
 }
 
+// The patient details the doctor can edit on the Patient page.
+export interface Patient {
+  name: string
+  age: string
+  sex: string
+  fileNumber: string
+  visitDate: string
+  history: string
+  notes: string
+}
+
 // A picture the doctor has opened. It is kept in memory so the doctor can look at it again.
 export interface Picture {
   name: string // shown to the doctor, and stored on each finding

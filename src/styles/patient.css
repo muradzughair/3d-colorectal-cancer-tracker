@@ -1,0 +1,129 @@
+/* Page 4: Patient & plan. Clean sections with headings and thin dividers, no boxes. */
+.doc {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.doc-section {
+  padding: 18px 0 20px;
+  border-top: 1px solid var(--line);
+}
+
+.doc-section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.doc-section h2 {
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.doc-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.doc-heading h2 {
+  margin-bottom: 0;
+}
+
+/* ---------- Fields: plain text with a thin line under it ---------- */
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px 28px;
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+.span-4 {
+  grid-column: span 4;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.field > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.field input,
+.field textarea,
+.doc-table input,
+.doc-table select {
+  width: 100%;
+  min-width: 0;
+  padding: 5px 2px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus,
+.doc-table input:focus,
+.doc-table select:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.follow-up {
+  max-width: 220px;
+}
+
+/* ---------- Tables: only thin lines between rows ---------- */
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.doc-table th {
+  padding: 4px 12px 6px 0;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  color: var(--muted);
+}
+
+.doc-table td {
+  padding: 7px 12px 7px 0;
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.plan-table td:nth-child(1) {
+  white-space: nowrap;
+}
+
+.plan-table td:nth-child(2) {
+  width: 230px;
+}
+
+.plan-table td:nth-child(3) {
+  width: 160px;
+}
+
+.plan-note {
+  margin: -6px 0 8px;
+  font-size: 13px;
+}

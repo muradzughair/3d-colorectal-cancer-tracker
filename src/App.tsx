@@ -7,9 +7,21 @@ import TimePage from './pages/TimePage'
 import ComparePage from './pages/ComparePage'
 import PatientPage from './pages/PatientPage'
 import { newId } from './lib/findings'
+import { EMPTY_PLAN_ITEM, type Plan, type PlanItem } from './lib/plan'
 import { useRoute } from './lib/route'
 import type { SegmentId } from './data/segments'
-import type { Finding, FindingKind, Picture } from './types'
+import type { Finding, FindingKind, Patient, Picture } from './types'
+
+// The fictional demo patient the page starts with.
+const DEMO_PATIENT: Patient = {
+  name: 'Layla Nasser',
+  age: '58',
+  sex: 'Female',
+  fileNumber: 'DEMO-0001',
+  visitDate: new Date().toISOString().slice(0, 10),
+  history: 'Fictional example: change in bowel habits for 3 months. No earlier colonoscopy.',
+  notes: '',
+}
 
 export default function App() {
   const route = useRoute()
@@ -17,12 +29,16 @@ export default function App() {
   const [pictures, setPictures] = useState<Picture[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [markMode, setMarkMode] = useState<FindingKind | null>(null)
+  const [patient, setPatient] = useState<Patient>(DEMO_PATIENT)
+  const [plan, setPlan] = useState<Plan>({}) // the treatment plan, by finding id
+  const [followUp, setFollowUp] = useState('') // follow-up date
 
   // Click a finding (or its pin) to select it; click it again to unselect.
   const select = (id: string) => setSelectedId((current) => (current === id ? null : id))
 
   const remove = (id: string) => {
     setFindings((list) => list.filter((f) => f.id !== id))
+    setPlan(({ [id]: _removed, ...rest }) => rest) // its plan row goes too
     if (selectedId === id) setSelectedId(null)
   }
 
@@ -53,6 +69,10 @@ export default function App() {
     setMarkMode(null)
   }
 
+  // The doctor changed something in one plan row.
+  const changePlan = (findingId: string, change: Partial<PlanItem>) =>
+    setPlan((current) => ({ ...current, [findingId]: { ...(current[findingId] ?? EMPTY_PLAN_ITEM), ...change } }))
+
   // Choose Polyp or Tumor; choosing the same one again cancels.
   const toggleMarkMode = (kind: FindingKind) => setMarkMode((current) => (current === kind ? null : kind))
 
@@ -77,7 +97,17 @@ export default function App() {
       )}
       {route === 'time' && <TimePage findings={findings} selectedId={selectedId} />}
       {route === 'compare' && <ComparePage />}
-      {route === 'patient' && <PatientPage />}
+      {route === 'patient' && (
+        <PatientPage
+          patient={patient}
+          onPatient={(change) => setPatient((current) => ({ ...current, ...change }))}
+          findings={findings}
+          plan={plan}
+          onPlan={changePlan}
+          followUp={followUp}
+          onFollowUp={setFollowUp}
+        />
+      )}
 
       <footer className="footer">
         3D colon model: Human Reference Atlas, Large Intestine (Female), CC-BY 4.0, via NIH 3D.
