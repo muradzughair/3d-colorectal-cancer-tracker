@@ -7,6 +7,7 @@ import VisitsPage from './pages/VisitsPage'
 import ColonPage from './pages/ColonPage'
 import VideosPage from './pages/VideosPage'
 import TimePage from './pages/TimePage'
+import ComparePage from './pages/ComparePage'
 import { sortedVisits, useRecord } from './data/record'
 import { useRoute } from './lib/route'
 import type { FindingKind } from './types'
@@ -57,6 +58,7 @@ export default function App() {
           )}
           {route === 'videos' && visit && <VideosPage key={visit.id} visit={visit} visits={visits} onVisit={chooseVisit} />}
           {route === 'time' && visit && <TimePage key={`${visit.id}-${selectedId}`} findings={visit.findings} selectedId={selectedId} />}
+          {route === 'compare' && visit && <ComparePage visits={visits} visit={visit} onVisit={chooseVisit} />}
           {route !== 'visits' && !visit && (
             <div className="page page-text">
               <p className="muted">

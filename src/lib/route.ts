@@ -2,7 +2,7 @@
 // Links like <a href="#/time"> change it, and the browser back button works for free.
 import { useEffect, useState } from 'react'
 
-export type RouteId = 'visits' | 'colon' | 'videos' | 'time'
+export type RouteId = 'visits' | 'colon' | 'videos' | 'time' | 'compare'
 
 // The pages, in tab order.
 export const ROUTES: { id: RouteId; label: string }[] = [
@@ -10,6 +10,7 @@ export const ROUTES: { id: RouteId; label: string }[] = [
   { id: 'colon', label: '3D colon' },
   { id: 'videos', label: 'Videos' },
   { id: 'time', label: 'Over time' },
+  { id: 'compare', label: 'Compare dates' },
 ]
 
 function readRoute(): RouteId {
