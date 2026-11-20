@@ -1,8 +1,9 @@
-/* Page styles. Polyps are always blue, tumors are always red. */
+/* Base styles: colours, page frame, top bar, footer and small shared controls.
+   Polyps are always blue, tumors are always red. No boxes: areas are separated by white
+   space and a few thin lines. */
 :root {
-  --bg: #f3f5f8;
-  --panel: #ffffff;
-  --border: #e2e7ee;
+  --bg: #f1f3f7;
+  --line: #dfe4ea;
   --text: #1c2733;
   --muted: #667383;
   --accent: #1f4e79;
@@ -10,7 +11,6 @@
   --polyp-soft: #e8efff;
   --tumor: #dc2626;
   --tumor-soft: #fdecec;
-  --radius: 12px;
 
   font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
@@ -37,446 +37,120 @@ p {
 
 button,
 select,
-input {
+input,
+textarea {
   font: inherit;
   color: inherit;
 }
 
-/* ---------- Page frame ---------- */
+.muted {
+  color: var(--muted);
+}
+
+/* ---------- Page frame: one open screen with the soft light gradient ---------- */
 
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  min-height: 640px;
+  min-height: 560px;
+  background: radial-gradient(ellipse at 50% 42%, #ffffff 0%, #f1f3f7 62%, #e7ebf1 100%);
 }
 
-.header {
+/* The area between the top bar and the footer. Pages fill it. */
+.page {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/* A page that is mostly text and scrolls when it is longer than the screen. */
+.page-text {
+  overflow-y: auto;
+  padding: 28px 32px;
+}
+
+.footer {
+  padding: 6px 24px 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- Top bar ---------- */
+
+.topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 14px 24px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
+  gap: 14px;
+  padding: 0 24px;
+  min-height: 46px;
+  border-bottom: 1px solid var(--line);
 }
 
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.header h1 {
-  font-size: 17px;
+.topbar h1 {
+  flex: none;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--accent);
 }
 
 .demo-tag {
+  flex: none;
   padding: 2px 9px;
   border-radius: 999px;
   font-size: 11.5px;
   font-weight: 600;
   color: #8a5a00;
   background: #fff4dc;
-  border: 1px solid #f3dfae;
 }
 
-.header-notice {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.workspace {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(330px, 27%) 1fr minmax(260px, 23%);
-  grid-template-rows: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'images viewer findings'
-    'slider slider slider';
-  gap: 16px;
-  padding: 16px 24px;
-}
-
-.footer {
-  padding: 8px 24px 12px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-/* ---------- Panels ---------- */
-
-.panel {
+.tabs {
   display: flex;
-  flex-direction: column;
-  min-height: 0;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-  overflow: hidden;
+  gap: 4px;
+  margin-left: 12px;
 }
 
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 46px;
-  padding: 8px 12px 6px 16px;
-}
-
-.panel-head h2 {
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-
-.images-panel {
-  grid-area: images;
-}
-
-.viewer-panel {
-  grid-area: viewer;
-}
-
-.findings-panel {
-  grid-area: findings;
-}
-
-.slider-panel {
-  grid-area: slider;
-}
-
-/* ---------- 3D colon ---------- */
-
-.colon-viewer {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  margin: 0 12px 12px;
-  border-radius: 10px;
-  overflow: hidden;
-  background: radial-gradient(ellipse at 50% 38%, #ffffff 0%, #f1f3f7 62%, #e7ebf1 100%);
-}
-
-.colon-canvas {
-  position: absolute;
-  inset: 0;
-}
-
-.colon-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none; /* let mouse drags reach the 3D canvas */
-}
-
-.label-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.label-lines line {
-  stroke: #8f9aa8;
-  stroke-width: 0.8;
-}
-
-.label-lines circle {
-  fill: #5b6675;
-}
-
-.segment-label {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 1px 6px;
-  font-size: 11px;
+.tabs a {
+  padding: 13px 12px 11px;
+  border-bottom: 2px solid transparent;
+  font-size: 13.5px;
   font-weight: 500;
   white-space: nowrap;
-  color: #455161;
-  background: rgba(255, 255, 255, 0.78);
-  border-radius: 4px;
+  text-decoration: none;
+  color: var(--muted);
 }
 
-/* ---------- Pins on the 3D colon ---------- */
-
-.pin {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  left: 0;
-  pointer-events: auto;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-/* The round head sits just above the point, with a small tip touching the surface. */
-.pin-head {
-  position: absolute;
-  left: 0;
-  bottom: 6px;
-  transform: translateX(-50%);
-  display: grid;
-  place-items: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 4px;
-  border-radius: 999px;
-  border: 2px solid #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  color: #ffffff;
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.35);
-}
-
-.pin-head::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -7px;
-  transform: translateX(-50%);
-  border: 4px solid transparent;
-  border-top: 5px solid #ffffff;
-}
-
-.pin-polyp .pin-head {
-  background: var(--polyp);
-}
-
-.pin-tumor .pin-head {
-  background: var(--tumor);
-}
-
-/* A single tumor has no number: show a small white dot instead. */
-.pin-tumor .pin-head:empty::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ffffff;
-}
-
-.pin.is-selected {
-  z-index: 3;
-}
-
-.pin.is-selected .pin-head {
-  min-width: 24px;
-  height: 24px;
-  font-size: 12px;
-}
-
-.pin-polyp.is-selected .pin-head {
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25), 0 1px 3px rgba(16, 24, 40, 0.35);
-}
-
-.pin-tumor.is-selected .pin-head {
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.25), 0 1px 3px rgba(16, 24, 40, 0.35);
-}
-
-.pin-caption {
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  left: 0;
-  padding: 2px 7px;
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
+.tabs a:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
 }
 
-/* Pins on the far side of the colon are faded. */
-.pin.is-behind {
-  opacity: 0.35;
+.tabs a.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
-/* ---------- Findings list ---------- */
-
-.count {
-  min-width: 22px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  text-align: center;
-  color: var(--muted);
-  background: var(--bg);
-}
-
-.empty-note {
-  padding: 4px 16px 16px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.findings-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  margin: 0;
-  padding: 0 10px 10px;
-  list-style: none;
-}
-
-.finding {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 9px 10px;
-  margin-bottom: 4px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  cursor: pointer;
-}
-
-.finding:hover {
-  background: #f7f9fb;
-}
-
-.finding-polyp.is-selected {
-  background: var(--polyp-soft);
-  border-color: #c9d8fb;
-}
-
-.finding-tumor.is-selected {
-  background: var(--tumor-soft);
-  border-color: #f6caca;
-}
-
-.finding-badge {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  margin-top: 1px;
-  border-radius: 50%;
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 0 1px var(--border);
-  font-size: 11px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.badge-polyp {
-  background: var(--polyp);
-}
-
-.badge-tumor {
-  background: var(--tumor);
-}
-
-.badge-tumor:empty::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ffffff;
-}
-
-.finding-body {
+.topbar-notice {
   flex: 1;
   min-width: 0;
-}
-
-.finding-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.finding-top strong {
-  font-weight: 600;
-}
-
-.source-tag {
-  padding: 0 6px;
-  border-radius: 4px;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-.source-ai {
-  color: #3d4b5c;
-  background: #eef1f5;
-}
-
-.source-manual {
-  color: #5a4a1a;
-  background: #f6f0de;
-}
-
-.finding-meta {
-  font-size: 13px;
-  color: var(--text);
-}
-
-.finding-position {
+  text-align: right;
   font-size: 12px;
+  line-height: 1.3;
   color: var(--muted);
 }
 
-.remove-button {
-  flex: none;
-  width: 24px;
-  height: 24px;
-  border: none;
-  border-radius: 6px;
-  font-size: 17px;
-  line-height: 1;
-  color: var(--muted);
-  background: transparent;
-  cursor: pointer;
-}
+/* ---------- Shared small controls ---------- */
 
-.remove-button:hover {
-  color: var(--tumor);
-  background: var(--tumor-soft);
-}
-
-/* ---------- Medical pictures panel ---------- */
-
-.image-panel {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0 14px 14px;
-}
-
-.image-toolbar {
-  display: flex;
-  gap: 8px;
-}
-
+/* A small switch of 2-3 choices (Colonoscopy / CT scan, Slow / Medium / Fast). */
 .type-switch {
-  flex: 1;
-  min-width: 0;
-  display: flex;
+  display: inline-flex;
   padding: 3px;
   border-radius: 9px;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: rgba(31, 78, 121, 0.08);
 }
 
 .type-switch button {
-  flex: 1;
-  padding: 4px 6px;
+  padding: 4px 12px;
   white-space: nowrap;
   border: none;
   border-radius: 7px;
@@ -488,17 +162,15 @@ input {
 }
 
 .type-switch button.is-active {
-  color: var(--text);
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1);
+  color: #ffffff;
+  background: var(--accent);
 }
 
-.upload-button {
-  flex: none;
-  display: grid;
-  place-items: center;
-  padding: 0 14px;
-  border-radius: 9px;
+/* A plain button with the navy accent colour. */
+.button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
   color: #ffffff;
@@ -506,366 +178,6 @@ input {
   cursor: pointer;
 }
 
-.upload-button:hover {
+.button:hover {
   background: #183f63;
-}
-
-.upload-button input {
-  display: none;
-}
-
-.sample-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.sample-thumb {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 4px 3px 3px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  min-width: 0;
-  font-size: 11.5px;
-  white-space: nowrap;
-  text-align: left;
-  color: var(--muted);
-  background: #ffffff;
-  cursor: pointer;
-}
-
-.sample-thumb span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sample-thumb:hover {
-  border-color: #b9c4d2;
-}
-
-.sample-thumb.is-active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(31, 78, 121, 0.15);
-  color: var(--text);
-}
-
-.sample-thumb img {
-  flex: none;
-  width: 30px;
-  height: 26px;
-  object-fit: cover;
-  border-radius: 5px;
-  background: #000;
-}
-
-.image-stage {
-  position: relative;
-  flex: 1;
-  min-height: 120px;
-  display: grid;
-  place-items: center;
-  border-radius: 9px;
-  background: #0e141b;
-  overflow: hidden;
-}
-
-.stage-note {
-  padding: 16px;
-  font-size: 13px;
-  text-align: center;
-  color: #9aa6b4;
-}
-
-.image-marks {
-  position: absolute;
-  inset: 6px;
-}
-
-.image-marks img,
-.image-marks svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.mark-polyp rect:first-child {
-  fill: none;
-  stroke: var(--polyp);
-  stroke-width: 3;
-}
-
-.mark-tumor polygon {
-  fill: rgba(220, 38, 38, 0.18);
-  stroke: var(--tumor);
-  stroke-width: 2.5;
-  stroke-linejoin: round;
-}
-
-.mark-polyp .mark-label rect {
-  fill: var(--polyp);
-}
-
-.mark-tumor .mark-label rect {
-  fill: var(--tumor);
-}
-
-.mark-label text {
-  fill: #ffffff;
-  font-weight: 600;
-}
-
-.image-result {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-}
-
-.image-name {
-  font-weight: 600;
-}
-
-.muted {
-  color: var(--muted);
-}
-
-.dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 7px;
-  border-radius: 50%;
-  vertical-align: 1px;
-}
-
-.dot-polyp {
-  background: var(--polyp);
-}
-
-.dot-tumor {
-  background: var(--tumor);
-}
-
-.segment-pick {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.segment-pick span {
-  flex: none;
-  color: var(--muted);
-}
-
-.segment-pick select {
-  flex: 1;
-  min-width: 0;
-  padding: 5px 8px;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: #ffffff;
-}
-
-/* ---------- Manual marking ---------- */
-
-.mark-tools {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  color: var(--muted);
-}
-
-.mark-tools span {
-  margin-right: 4px;
-}
-
-.mark-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 11px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 12.5px;
-  font-weight: 500;
-  background: #ffffff;
-  cursor: pointer;
-}
-
-.mark-button::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.mark-button-polyp::before {
-  background: var(--polyp);
-}
-
-.mark-button-tumor::before {
-  background: var(--tumor);
-}
-
-.mark-button:hover {
-  border-color: #b9c4d2;
-}
-
-.mark-button-polyp.is-active {
-  color: #ffffff;
-  background: var(--polyp);
-  border-color: var(--polyp);
-}
-
-.mark-button-tumor.is-active {
-  color: #ffffff;
-  background: var(--tumor);
-  border-color: var(--tumor);
-}
-
-.mark-button.is-active::before {
-  background: #ffffff;
-}
-
-.colon-viewer.is-marking .colon-canvas {
-  cursor: crosshair;
-}
-
-.mark-hint {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 12.5px;
-  color: #ffffff;
-  background: rgba(28, 39, 51, 0.82);
-  pointer-events: none;
-}
-
-/* ---------- Time slider ---------- */
-
-.time-slider {
-  display: grid;
-  grid-template-columns: minmax(300px, 30%) 1fr;
-  gap: 24px;
-  padding: 0 16px 14px;
-}
-
-.slider-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.slider-subject {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.speed-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-}
-
-.speed-row .type-switch {
-  flex: 1;
-}
-
-/* The slider bar: filled (blue) up to the handle, grey after it. */
-.range {
-  width: 100%;
-  height: 6px;
-  margin: 6px 0 0;
-  border-radius: 999px;
-  appearance: none;
-  background: linear-gradient(to right, var(--accent) var(--fill), #dfe4ea var(--fill));
-  cursor: pointer;
-}
-
-.range::-webkit-slider-thumb {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 3px solid #ffffff;
-  background: var(--accent);
-  box-shadow: 0 1px 4px rgba(16, 24, 40, 0.35);
-}
-
-.range::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 3px solid #ffffff;
-  background: var(--accent);
-  box-shadow: 0 1px 4px rgba(16, 24, 40, 0.35);
-}
-
-.range-ends {
-  display: flex;
-  justify-content: space-between;
-  margin-top: -6px;
-  font-size: 11.5px;
-}
-
-.stage {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  font-size: 13.5px;
-}
-
-.stage-years {
-  flex: none;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.disclaimer {
-  padding: 5px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #6d5a1f;
-  background: #fbf6e6;
-  border: 1px solid #f0e4bd;
-}
-
-.wall-panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-content: start;
-  gap: 16px;
-}
-
-.wall-panels figure {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 0;
-  margin: 0;
-}
-
-.wall-panels figcaption {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  font-size: 13px;
-}
-
-.wall {
-  width: 100%;
-  height: clamp(110px, 21vh, 200px);
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: #f8f4f3;
 }

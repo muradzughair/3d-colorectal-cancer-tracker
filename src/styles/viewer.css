@@ -1,0 +1,141 @@
+/* The 3D colon view: it sits directly on the page background (no box). */
+.colon-viewer {
+  position: absolute;
+  inset: 0;
+}
+
+.colon-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.colon-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* let mouse drags reach the 3D canvas */
+  overflow: hidden;
+}
+
+.label-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.label-lines line {
+  stroke: #8f9aa8;
+  stroke-width: 0.8;
+}
+
+.label-lines circle {
+  fill: #5b6675;
+}
+
+.segment-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #455161;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+}
+
+/* ---------- Pins on the 3D colon ---------- */
+
+.pin {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+/* The round head sits just above the point, with a small tip touching the surface. */
+.pin-head {
+  position: absolute;
+  left: 0;
+  bottom: 6px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.35);
+}
+
+.pin-head::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top: 5px solid #ffffff;
+}
+
+.pin-polyp .pin-head {
+  background: var(--polyp);
+}
+
+.pin-tumor .pin-head {
+  background: var(--tumor);
+}
+
+/* A single tumor has no number: show a small white dot instead. */
+.pin-tumor .pin-head:empty::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.pin.is-selected {
+  z-index: 3;
+}
+
+.pin.is-selected .pin-head {
+  min-width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.pin-polyp.is-selected .pin-head {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25), 0 1px 3px rgba(16, 24, 40, 0.35);
+}
+
+.pin-tumor.is-selected .pin-head {
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.25), 0 1px 3px rgba(16, 24, 40, 0.35);
+}
+
+.pin-caption {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+}
+
+/* Pins on the far side of the colon are faded. */
+.pin.is-behind {
+  opacity: 0.35;
+}
