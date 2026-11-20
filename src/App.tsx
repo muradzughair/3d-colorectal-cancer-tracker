@@ -5,6 +5,7 @@ import { useState } from 'react'
 import TopBar from './components/TopBar'
 import VisitsPage from './pages/VisitsPage'
 import ColonPage from './pages/ColonPage'
+import VideosPage from './pages/VideosPage'
 import TimePage from './pages/TimePage'
 import { sortedVisits, useRecord } from './data/record'
 import { useRoute } from './lib/route'
@@ -54,6 +55,7 @@ export default function App() {
               onMarkMode={setMarkMode}
             />
           )}
+          {route === 'videos' && visit && <VideosPage key={visit.id} visit={visit} visits={visits} onVisit={chooseVisit} />}
           {route === 'time' && visit && <TimePage key={visit.id} findings={visit.findings} selectedId={selectedId} />}
           {route !== 'visits' && !visit && (
             <div className="page page-text">
