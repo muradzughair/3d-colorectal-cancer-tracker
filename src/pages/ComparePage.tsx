@@ -33,9 +33,9 @@ function DatePicker({ visits, value, onChange }: { visits: Visit[]; value: strin
 }
 
 export default function ComparePage({ visits, visit, onVisit }: Props) {
-  // Left side: starts with the visit before the chosen one.
+  // Left side: starts with the visit before the chosen one (or after it, for the first visit).
   const position = visits.findIndex((v) => v.id === visit.id)
-  const [leftId, setLeftId] = useState(visits[Math.max(0, position - 1)]?.id ?? visit.id)
+  const [leftId, setLeftId] = useState(visits[position > 0 ? position - 1 : position + 1]?.id ?? visit.id)
   const left = visits.find((v) => v.id === leftId) ?? visits[0]
   const [leftScene, setLeftScene] = useState<ColonScene | null>(null)
   const [rightScene, setRightScene] = useState<ColonScene | null>(null)
