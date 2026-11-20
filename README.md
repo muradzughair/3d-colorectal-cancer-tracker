@@ -12,14 +12,23 @@ The tabs in the top bar choose the page; the web address changes with it (`#/col
 
 | Page | What it does |
 | --- | --- |
-| **3D colon** (`#/colon`) | The chosen visit's colon: blue pins for polyps, a red pin for a tumor. Drag to rotate, scroll to zoom. The findings list is on the right: select a finding to edit its size and segment. **Mark by hand** adds a polyp or tumor by clicking the colon. **Pictures** opens a side panel with the visit's CT and colonoscopy pictures: **Download** saves the original file, and clicking a thumbnail enlarges it with the AI marks. |
-| **Fly-through** (on the 3D colon page) | Select a finding, then **Fly-through**: the camera flies inside the colon to the finding. A demo only: "Demo fly-through, not built from real scan data." It looks plain because the model has no texture inside. |
+| **3D colon** (`#/colon`) | The main page. A switch at the top chooses **Outside** or **Inside**. **Outside:** the chosen visit's colon with blue pins for polyps and a red pin for a tumor; drag to rotate, scroll to zoom. **Mark by hand** adds a polyp or tumor by clicking the colon. **Inside:** a simulated endoscopy (see below). In both views the findings list is on the right (select a finding to edit its size and segment), and **Pictures** opens a side panel with the visit's CT and colonoscopy pictures: **Download** saves the original file, and clicking a thumbnail enlarges it with the AI marks. |
 | **Over time** (`#/time`) | How a polyp could grow into the colon wall, starting from its measured size (editable), with slow, medium or fast growth. Always says: "Illustration with assumed settings. Not a prediction for any patient." |
 | **Compare dates** (`#/compare`) | Two colons side by side for any two visits (rotating one turns the other), and a table of how each finding's size changed. Findings are matched by kind and segment. |
 | **Treatment record** (`#/treatment`) | Dated treatment and medicine entries written by the doctor, each Done, In progress or Planned, with a note, in date order. A progress bar shows the steps done out of all steps. |
 | **Report** (`#/report`) | A report for the radiologist about the chosen visit: filled in from its findings, with a snapshot of the 3D colon. The text is editable. **Print** and **Save as PDF** use the browser's print window. The app writes no medical advice and no AI-written text. |
 
 Always on screen: the **Demo mode** tag, "Decision-support tool. The doctor makes the final decision." and the 3D model credit.
+
+## The Inside view (simulated endoscopy)
+
+A simulation, **not a real video and not from patient scan data**. The page always says: "Simulation based on a reference model. Not a real video and not from patient scan data."
+
+- **Path:** the camera travels along the colon's centerline (`src/data/centerline.ts`), from the start of the colon (cecum) to the end (rectum). The centerline was computed once from the model's inner wall (points half-way across the colon, traced segment by segment and smoothed); the model file is not changed.
+- **Look:** a wide 100° lens with a faint round vignette and a slight camera sway; a light on the camera that fades with distance, and dark fog, so far parts fade to black. The wall is a wet, pink-red lining (`src/lib/mucosa.ts`): soft highlights, faint vein-like colour, a fine uneven surface, and ring-shaped folds (haustra) drawn by the shader. For the close-up, the model's parts are joined into one surface and made finer and rounder in code (`src/lib/subdivide.ts`).
+- **Findings:** the visit's findings sit on the wall at their positions: polyps as small raised rounded bumps, a tumor as a larger irregular reddish mass. A small label appears when the camera is close.
+- **Controls:** **Play / Pause**, a position slider (start to end), **Go to finding** (moves to a spot from which the finding can be seen and turns towards it), and the keyboard arrows (up or right = forward, down or left = back).
+- Plain three.js only (lights, fog and a custom material); no post-processing libraries.
 
 ## Demo mode and saved data
 
@@ -56,18 +65,20 @@ src/
   main.tsx                starts the app and loads the styles
   types.ts                the shapes of visits, findings, pictures, treatment entries, reports, detector results
   data/                   the shared data (later reused by the patient and outside-doctor views)
+    centerline.ts         the centerline through the colon model, for the Inside view
     record.ts             the patient record: builds the demo, saves to localStorage, the changes a doctor can make
     demoPatient.ts        the fictional patient, the 4 visits and the treatment entries
     segments.ts           colon segments: names, colours, model part names
   pages/                  one file per page
-    ColonPage.tsx         3D colon, findings list, marking, pictures panel, fly-through
+    ColonPage.tsx         3D colon: Outside | Inside switch, findings list, marking, pictures panel
     TimePage.tsx          Over time (ASSUMED growth settings at the top)
     ComparePage.tsx       Compare dates
     TreatmentPage.tsx     Treatment and medicine record
     ReportPage.tsx        Report
   components/             parts of the screen
     TopBar.tsx            title, tabs, demo tag, decision-support line, visit date dropdown
-    ColonViewer.tsx       the 3D colon with labels, pins, manual marking and the fly-through
+    ColonViewer.tsx       the Outside view: 3D colon with labels, pins and manual marking
+    InsideView.tsx        the Inside view: simulated endoscopy and its controls
     FindingsList.tsx      the findings list with size and segment editing
     ImagePanel.tsx        the pictures panel: thumbnails, Download, enlarged picture
     ImageMarks.tsx        draws boxes and outlines on a picture
@@ -77,7 +88,9 @@ src/
     route.ts              the page tabs and the hash routing
     colonScene.ts         3D renderer, camera, lights, mouse controls
     colonModel.ts         loads and smooths the model, finds points on segments
-    flyThrough.ts         the fly-through camera flight
+    insideScene.ts        the Inside view's 3D scene: path, headlight, fog, findings on the wall
+    mucosa.ts             the wet lining material (folds, veins, fine surface)
+    subdivide.ts          makes the wall finer and rounder for the Inside view
     snapshot.ts           the still picture of the 3D colon for the report
     labels.ts, pins.ts    segment labels and finding pins on the 3D view
     pinPositions.ts       where each finding sits on the colon (same on every page)
