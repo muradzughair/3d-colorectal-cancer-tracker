@@ -3,7 +3,6 @@ import type { SegmentId } from './data/segments'
 
 export type FindingKind = 'polyp' | 'tumor'
 export type ImageType = 'colonoscopy' | 'ct'
-export type MediaType = ImageType | 'video' // what the detector can read
 
 // Size: polyps in mm, tumors in cm.
 export interface Size {
@@ -25,14 +24,12 @@ export interface Finding {
   position?: [number, number, number]
 }
 
-// The patient details the doctor can edit.
+// The (fictional) patient's details, shown on the report.
 export interface Patient {
   name: string
   age: string
   sex: string
   fileNumber: string
-  history: string
-  notes: string
 }
 
 // A picture of a visit, with what the detector found in it.
@@ -45,23 +42,13 @@ export interface Picture {
   segment: SegmentId | '' // colonoscopy only: the segment the doctor chose
 }
 
-// A video of a visit, with the moments the detector found in it.
-export interface VisitVideo {
-  name: string
-  file: string // a sample video in public/samples
-  moments: VideoMoment[] // empty = nothing found, or no result in demo mode
-}
-
-// One dated visit: its pictures, video, test notes and findings.
+// One dated visit: its pictures and findings.
 export interface Visit {
   id: string
   date: string // "2025-03-11"
   title: string // e.g. "Screening colonoscopy"
-  tests: string // test information, free text
   pictures: Picture[]
-  video: VisitVideo | null
   findings: Finding[]
-  addedByDoctor: boolean // false = one of the pre-loaded demo visits
 }
 
 // One step in the treatment and medicine record. Written by the doctor, never by the app.
@@ -112,15 +99,7 @@ export interface DetectedTumor {
   segment: SegmentId // a CT scan shows where the tumor is
 }
 
-// A finding in a video, at a moment in time (seconds from the start).
-export interface VideoMoment {
-  time: number
-  kind: FindingKind
-  size: Size
-}
-
 export interface DetectionResult {
   polyps: DetectedPolyp[]
   tumor: DetectedTumor | null
-  moments?: VideoMoment[] // videos only
 }

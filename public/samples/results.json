@@ -202,41 +202,5 @@
       }
     ],
     "tumor": null
-  },
-  "v1-colonoscopy.mp4": {
-    "polyps": [],
-    "tumor": null,
-    "moments": [
-      {
-        "time": 7,
-        "kind": "polyp",
-        "size": {
-          "value": 6,
-          "unit": "mm"
-        }
-      },
-      {
-        "time": 19,
-        "kind": "polyp",
-        "size": {
-          "value": 9,
-          "unit": "mm"
-        }
-      }
-    ]
-  },
-  "v4-colonoscopy.mp4": {
-    "polyps": [],
-    "tumor": null,
-    "moments": [
-      {
-        "time": 11,
-        "kind": "polyp",
-        "size": {
-          "value": 8,
-          "unit": "mm"
-        }
-      }
-    ]
   }
 }

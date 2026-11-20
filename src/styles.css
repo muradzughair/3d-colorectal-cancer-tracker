@@ -195,7 +195,7 @@ textarea {
   background: #183f63;
 }
 
-/* The visit selector on the right of the tabs. */
+/* The small visit date dropdown on the right of the tabs. */
 .visit-select {
   display: flex;
   flex: none;
@@ -206,7 +206,6 @@ textarea {
 }
 
 .visit-select select {
-  max-width: 340px;
   padding: 4px 8px;
   border: 1px solid var(--line);
   border-radius: 8px;

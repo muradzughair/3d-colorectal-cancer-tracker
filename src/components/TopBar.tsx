@@ -1,5 +1,5 @@
 // Top bar. First line: title, demo tag and the decision-support line.
-// Second line: the page tabs and the visit selector (the chosen visit is used on every page).
+// Second line: the page tabs and the visit date dropdown (the chosen visit is used on every page).
 import { DEMO_MODE } from '../detector'
 import { formatDate } from '../lib/dates'
 import { ROUTES, type RouteId } from '../lib/route'
@@ -32,11 +32,11 @@ export default function TopBar({ route, visits, visitId, onVisit }: Props) {
 
         {visits.length > 0 && (
           <label className="visit-select">
-            <span>Visit</span>
-            <select value={visitId ?? ''} onChange={(e) => onVisit(e.target.value)}>
-              {visits.map((v, i) => (
+            <span>Visit date</span>
+            <select value={visitId ?? ''} onChange={(e) => onVisit(e.target.value)} title={visits.find((v) => v.id === visitId)?.title}>
+              {visits.map((v) => (
                 <option key={v.id} value={v.id}>
-                  {i + 1}. {formatDate(v.date)} · {v.title || 'Visit'}
+                  {formatDate(v.date)}
                 </option>
               ))}
             </select>

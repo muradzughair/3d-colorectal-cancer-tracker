@@ -3,9 +3,7 @@
 // screen right now: the chosen visit, the selected finding and the marking mode.
 import { useState } from 'react'
 import TopBar from './components/TopBar'
-import VisitsPage from './pages/VisitsPage'
 import ColonPage from './pages/ColonPage'
-import VideosPage from './pages/VideosPage'
 import TimePage from './pages/TimePage'
 import ComparePage from './pages/ComparePage'
 import TreatmentPage from './pages/TreatmentPage'
@@ -45,7 +43,6 @@ export default function App() {
       ) : (
         <>
           {/* Only the current page is built, so only one 3D view exists at a time. */}
-          {route === 'visits' && <VisitsPage store={store} visits={visits} visit={visit} onVisit={chooseVisit} />}
           {route === 'colon' && visit && (
             <ColonPage
               key={visit.id}
@@ -58,18 +55,10 @@ export default function App() {
               onMarkMode={setMarkMode}
             />
           )}
-          {route === 'videos' && visit && <VideosPage key={visit.id} visit={visit} visits={visits} onVisit={chooseVisit} />}
           {route === 'time' && visit && <TimePage key={`${visit.id}-${selectedId}`} findings={visit.findings} selectedId={selectedId} />}
           {route === 'compare' && visit && <ComparePage visits={visits} visit={visit} onVisit={chooseVisit} />}
           {route === 'treatment' && <TreatmentPage store={store} />}
           {route === 'report' && visit && <ReportPage key={visit.id} store={store} visit={visit} />}
-          {route !== 'visits' && route !== 'treatment' && !visit && (
-            <div className="page page-text">
-              <p className="muted">
-                There are no visits yet. Add one on the <a href="#/visits">Patient & visits</a> page.
-              </p>
-            </div>
-          )}
         </>
       )}
 

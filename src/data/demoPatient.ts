@@ -1,6 +1,6 @@
-// The fictional demo patient: details, 4 pre-loaded dated visits and the treatment record.
-// The pictures and videos are labelled placeholders in public/samples. The AI findings are
-// not written here: they come from the detector (src/detector.ts) when the app starts.
+// The fictional demo patient: details, 4 dated visits and the treatment record.
+// The pictures are labelled placeholders in public/samples. The AI findings are not written
+// here: they come from the detector (src/detector.ts) when the app starts.
 import type { ImageType, Patient, TreatmentEntry } from '../types'
 import type { SegmentId } from './segments'
 
@@ -9,19 +9,15 @@ export const DEMO_PATIENT: Patient = {
   age: '58',
   sex: 'Female',
   fileNumber: 'DEMO-0001',
-  history: 'Fictional example: change in bowel habits since early 2025. No earlier colonoscopy.',
-  notes: '',
 }
 
-// A visit as it is pre-loaded: which sample files it has. For colonoscopy pictures the
-// segment is the one the doctor chose when the picture was taken.
+// A visit and its sample pictures. For colonoscopy pictures the segment is the one the
+// doctor chose when the picture was taken.
 export interface DemoVisit {
   id: string
   date: string
   title: string
-  tests: string
   pictures: { file: string; name: string; type: ImageType; segment?: SegmentId }[]
-  video?: { file: string; name: string }
 }
 
 export const DEMO_VISITS: DemoVisit[] = [
@@ -29,25 +25,21 @@ export const DEMO_VISITS: DemoVisit[] = [
     id: 'visit-1',
     date: '2025-03-11',
     title: 'Screening colonoscopy',
-    tests: 'Stool test (FIT): positive. Biopsy taken from the sigmoid polyp; report kept by pathology. (Fictional)',
     pictures: [
       { file: 'v1-colonoscopy-ascending.png', name: 'Colonoscopy, ascending colon', type: 'colonoscopy', segment: 'ascending' },
       { file: 'v1-colonoscopy-sigmoid.png', name: 'Colonoscopy, sigmoid colon', type: 'colonoscopy', segment: 'sigmoid' },
     ],
-    video: { file: 'v1-colonoscopy.mp4', name: 'Colonoscopy video' },
   },
   {
     id: 'visit-2',
     date: '2025-08-12',
     title: 'CT scan',
-    tests: 'Blood tests recorded in the lab system. (Fictional)',
     pictures: [{ file: 'v2-ct.png', name: 'CT scan', type: 'ct' }],
   },
   {
     id: 'visit-3',
     date: '2026-01-13',
     title: 'Follow-up CT scan and colonoscopy',
-    tests: 'Blood tests recorded in the lab system. (Fictional)',
     pictures: [
       { file: 'v3-ct.png', name: 'CT scan', type: 'ct' },
       { file: 'v3-colonoscopy-ascending.png', name: 'Colonoscopy, ascending colon', type: 'colonoscopy', segment: 'ascending' },
@@ -57,11 +49,9 @@ export const DEMO_VISITS: DemoVisit[] = [
     id: 'visit-4',
     date: '2026-06-16',
     title: 'Follow-up colonoscopy',
-    tests: 'No new tests at this visit. (Fictional)',
     pictures: [
       { file: 'v4-colonoscopy-ascending.png', name: 'Colonoscopy, ascending colon', type: 'colonoscopy', segment: 'ascending' },
     ],
-    video: { file: 'v4-colonoscopy.mp4', name: 'Colonoscopy video' },
   },
 ]
 

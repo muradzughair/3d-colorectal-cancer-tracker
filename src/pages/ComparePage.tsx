@@ -43,16 +43,6 @@ export default function ComparePage({ visits, visit, onVisit }: Props) {
   // Link the two views as soon as both exist.
   useEffect(() => (leftScene && rightScene ? linkViews(leftScene, rightScene) : undefined), [leftScene, rightScene])
 
-  if (visits.length < 2) {
-    return (
-      <div className="page page-text">
-        <p className="muted">
-          There is only one visit. Add another visit on the <a href="#/visits">Patient & visits</a> page to compare dates.
-        </p>
-      </div>
-    )
-  }
-
   const rows = compareFindings(left.findings, visit.findings)
 
   return (

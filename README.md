@@ -1,6 +1,6 @@
 # Colorectal Care Record (Demo)
 
-A web platform for hospitals that keeps a colorectal cancer patient's whole history in one place and shows it on a 3D colon. Every CT scan, colonoscopy picture, video and test is saved as a **dated visit**. The doctor opens the colon as it was on any date, compares two dates, and reads every treatment and medicine that was given or planned. A new doctor who takes over the case sees what happened and what the previous doctor intended.
+A web platform for hospitals that keeps a colorectal cancer patient's whole history in one place and shows it on a 3D colon. Every CT scan and colonoscopy picture is saved with a **dated visit**. The doctor opens the colon as it was on any date, compares two dates, and reads every treatment and medicine that was given or planned. A new doctor who takes over the case sees what happened and what the previous doctor intended.
 
 The tool is only a helper. **The doctor makes every decision, and the app never suggests a treatment or a medicine.**
 
@@ -8,14 +8,12 @@ This version is the **hospital doctor view** (doctors, the MDT, radiologists) fo
 
 ## The pages
 
-The tabs in the top bar choose the page; the web address changes with it (`#/visits`, `#/colon`, ...), so the browser back button works. The **Visit** selector next to the tabs chooses the visit that every page shows.
+The tabs in the top bar choose the page; the web address changes with it (`#/colon`, `#/time`, ...), so the browser back button works. The small **Visit date** dropdown next to the tabs chooses which of the 4 dated visits every page shows (it is a selector, not a page).
 
 | Page | What it does |
 | --- | --- |
-| **Patient & visits** (`#/visits`) | The patient's details (editable) and the 4 dated visits: pictures, video, tests and findings of each. Click a visit to open it everywhere. The doctor can add a visit (date and what was done) and edit the test notes. |
 | **3D colon** (`#/colon`) | The chosen visit's colon: blue pins for polyps, a red pin for a tumor. Drag to rotate, scroll to zoom. The findings list is on the right: select a finding to edit its size and segment. **Mark by hand** adds a polyp or tumor by clicking the colon. **Pictures** opens the visit's pictures with the AI marks, and lets the doctor upload a new one. |
 | **Fly-through** (on the 3D colon page) | Select a finding, then **Fly-through**: the camera flies inside the colon to the finding. A demo only: "Demo fly-through, not built from real scan data." It looks plain because the model has no texture inside. |
-| **Videos** (`#/videos`) | Plays the visit's video. Findings in it are listed as timestamps ("Polyp at 00:07"); a click jumps to that moment. |
 | **Over time** (`#/time`) | How a polyp could grow into the colon wall, starting from its measured size (editable), with slow, medium or fast growth. Always says: "Illustration with assumed settings. Not a prediction for any patient." |
 | **Compare dates** (`#/compare`) | Two colons side by side for any two visits (rotating one turns the other), and a table of how each finding's size changed. Findings are matched by kind and segment. |
 | **Treatment record** (`#/treatment`) | Dated treatment and medicine entries written by the doctor, each Done, In progress or Planned, with a note, in date order. A progress bar shows the steps done out of all steps. |
@@ -25,10 +23,10 @@ Always on screen: the **Demo mode** tag, "Decision-support tool. The doctor make
 
 ## Demo mode and saved data
 
-- The real AI is not ready. The pictures and videos in `public/samples/` are generated **placeholders** (marked "PLACEHOLDER"), and their AI results are **pre-computed** in `public/samples/results.json`. When the app starts for the first time it runs the detector on every pre-loaded picture and video to build the 4 visits.
-- Everything the doctor changes (patient details, added visits, edited findings, manual marks, test notes, treatment entries, report text) is saved in the browser (`localStorage`), so it stays after a refresh.
+- The real AI is not ready. The pictures in `public/samples/` are generated **placeholders** (marked "PLACEHOLDER"), and their AI results are **pre-computed** in `public/samples/results.json`. When the app starts for the first time it runs the detector on every picture to build the 4 visits.
+- Everything the doctor changes (edited findings, manual marks, treatment entries, report text) is saved in the browser (`localStorage`), so it stays after a refresh.
 - An uploaded picture only stays until the page is refreshed (browsers cannot keep the file); its findings are kept.
-- To start the demo again from the beginning, clear this site's data in the browser (for example: DevTools → Application → Local storage → delete `colorectal-care-record-v1`).
+- To start the demo again from the beginning, clear this site's data in the browser (for example: DevTools → Application → Local storage → delete `colorectal-care-record-v2`).
 
 ## How to run
 
@@ -52,7 +50,7 @@ One-time setup: in the repository on GitHub, open **Settings → Pages** and set
 ```
 public/
   models/colon.glb        the 3D colon model (not changed by the code)
-  samples/                placeholder pictures and videos of the 4 visits, and results.json (pre-computed AI results)
+  samples/                placeholder pictures of the 4 visits, and results.json (pre-computed AI results)
 src/
   detector.ts             the AI detector: the one function to replace with a real model
   App.tsx                 the app shell: top bar, current page, footer; the chosen visit and selection
@@ -63,15 +61,13 @@ src/
     demoPatient.ts        the fictional patient, the 4 visits and the treatment entries
     segments.ts           colon segments: names, colours, model part names
   pages/                  one file per page
-    VisitsPage.tsx        Patient & visits
     ColonPage.tsx         3D colon, findings list, marking, pictures panel, fly-through
-    VideosPage.tsx        Videos
     TimePage.tsx          Over time (ASSUMED growth settings at the top)
     ComparePage.tsx       Compare dates
     TreatmentPage.tsx     Treatment and medicine record
     ReportPage.tsx        Report
   components/             parts of the screen
-    TopBar.tsx            title, tabs, demo tag, decision-support line, visit selector
+    TopBar.tsx            title, tabs, demo tag, decision-support line, visit date dropdown
     ColonViewer.tsx       the 3D colon with labels, pins, manual marking and the fly-through
     FindingsList.tsx      the findings list with size and segment editing
     ImagePanel.tsx        the pictures panel: the visit's pictures, upload, segment choice
@@ -92,13 +88,12 @@ src/
   styles.css, styles/     page styles (polyps blue, tumors red)
 ```
 
-## Using real pictures and videos
+## Using real pictures
 
-1. Put the files in `public/samples/`, and list them for each visit in `src/data/demoPatient.ts` (file name, name shown to the doctor, `colonoscopy` or `ct`, and for colonoscopy pictures the segment).
+1. Put the pictures in `public/samples/`, and list them for each visit in `src/data/demoPatient.ts` (file name, name shown to the doctor, `colonoscopy` or `ct`, and for colonoscopy pictures the segment).
 2. Add their results to `public/samples/results.json`, under the file name. All picture numbers are **pixels of the original image**, from the top-left corner:
    - polyp: `"box": { "x": left, "y": top, "w": width, "h": height }` and `"size": { "value": 6, "unit": "mm" }`
    - tumor: `"outline": [[x, y], [x, y], ...]`, `"size": { "value": 3.4, "unit": "cm" }` and `"segment"` (one of `cecum`, `appendix`, `ascending`, `hepatic`, `transverse`, `splenic`, `descending`, `sigmoid`, `rectum`)
-   - video: `"moments": [{ "time": 7, "kind": "polyp", "size": { "value": 6, "unit": "mm" } }]` (time in seconds)
 3. Clear the saved demo data in the browser (see above) so the visits are built again.
 
 ## Replacing the demo detector with a real model
@@ -106,16 +101,15 @@ src/
 All AI calls go through one function in `src/detector.ts`:
 
 ```ts
-detect(media: { name: string; url: string }, type: 'colonoscopy' | 'ct' | 'video'): Promise<DetectionResult | null>
+detect(image: { name: string; url: string }, type: 'colonoscopy' | 'ct'): Promise<DetectionResult | null>
 ```
 
-Rewrite its body so it sends the picture or video (load it from `media.url`) to your model and returns the same shape:
+Rewrite its body so it sends the picture (load it from `image.url`) to your model and returns the same shape:
 
 ```ts
 {
   polyps: [{ box: { x, y, w, h }, size: { value, unit: 'mm' } }],
-  tumor: { outline: [[x, y], ...], size: { value, unit: 'cm' }, segment: 'sigmoid' }, // or null
-  moments: [{ time, kind: 'polyp', size: { value, unit: 'mm' } }] // videos only
+  tumor: { outline: [[x, y], ...], size: { value, unit: 'cm' }, segment: 'sigmoid' } // or null
 }
 ```
 

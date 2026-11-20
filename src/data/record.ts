@@ -1,16 +1,16 @@
 // The patient record: one shared place for the patient, the visits, the treatment record and
 // the reports. All pages (and, later, the patient view and the outside-doctor view) read it
-// from here. It is saved in the browser (localStorage), so it stays after a refresh.
+// from here. Changes are saved in the browser (localStorage), so they stay after a refresh.
 import { useEffect, useState } from 'react'
 import { detect } from '../detector'
 import { findingsFromPicture, newId } from '../lib/findings'
 import { DEMO_ENTRIES, DEMO_PATIENT, DEMO_VISITS } from './demoPatient'
-import type { Finding, Patient, PatientRecord, Picture, ReportText, TreatmentEntry, Visit } from '../types'
+import type { Finding, PatientRecord, Picture, ReportText, TreatmentEntry, Visit } from '../types'
 
-const STORAGE_KEY = 'colorectal-care-record-v1'
+const STORAGE_KEY = 'colorectal-care-record-v2'
 export const SAMPLES_FOLDER = `${import.meta.env.BASE_URL}samples/`
 
-// Build the demo record: run the detector on every pre-loaded picture and video.
+// Build the demo record: run the detector on every picture of the 4 visits.
 async function buildDemoRecord(): Promise<PatientRecord> {
   const visits: Visit[] = []
   for (const demo of DEMO_VISITS) {
@@ -19,20 +19,12 @@ async function buildDemoRecord(): Promise<PatientRecord> {
       const result = await detect({ name: p.file, url: SAMPLES_FOLDER + p.file }, p.type)
       pictures.push({ name: p.name, type: p.type, file: p.file, result, segment: p.segment ?? '' })
     }
-    let video: Visit['video'] = null
-    if (demo.video) {
-      const result = await detect({ name: demo.video.file, url: SAMPLES_FOLDER + demo.video.file }, 'video')
-      video = { name: demo.video.name, file: demo.video.file, moments: result?.moments ?? [] }
-    }
     visits.push({
       id: demo.id,
       date: demo.date,
       title: demo.title,
-      tests: demo.tests,
       pictures,
-      video,
       findings: pictures.flatMap(findingsFromPicture),
-      addedByDoctor: false,
     })
   }
   return { patient: DEMO_PATIENT, visits, entries: DEMO_ENTRIES, reports: {} }
@@ -84,18 +76,6 @@ export function useRecord() {
 
   return {
     record,
-
-    updatePatient: (change: Partial<Patient>) => setRecord((r) => r && { ...r, patient: { ...r.patient, ...change } }),
-
-    // A new, empty visit. Returns its id.
-    addVisit: (date: string, title: string): string => {
-      const visit: Visit = { id: newId(), date, title, tests: '', pictures: [], video: null, findings: [], addedByDoctor: true }
-      setRecord((r) => r && { ...r, visits: [...r.visits, visit] })
-      return visit.id
-    },
-    removeVisit: (visitId: string) => setRecord((r) => r && { ...r, visits: r.visits.filter((v) => v.id !== visitId) }),
-    updateVisit: (visitId: string, change: Partial<Pick<Visit, 'date' | 'title' | 'tests'>>) =>
-      changeVisit(visitId, (v) => ({ ...v, ...change })),
 
     // A picture was opened: add it to the visit, or replace the one with the same name.
     savePicture: (visitId: string, picture: Picture) =>
