@@ -36,8 +36,7 @@ export interface Patient {
 export interface Picture {
   name: string // shown to the doctor, and stored on each finding
   type: ImageType
-  file?: string // a sample picture in public/samples (kept after a refresh)
-  url?: string // an uploaded picture (only kept until the page is refreshed)
+  file: string // the picture file in public/samples
   result: DetectionResult | null // null = the detector had no result for it
   segment: SegmentId | '' // colonoscopy only: the segment the doctor chose
 }

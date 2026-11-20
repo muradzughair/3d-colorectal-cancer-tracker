@@ -16,7 +16,7 @@ export default function FindingsList({ findings, selectedId, onSelect, onChange,
   const names = describeFindings(findings)
 
   if (findings.length === 0) {
-    return <p className="empty-note">No findings for this visit. Add a picture, or mark a polyp or tumor on the 3D colon.</p>
+    return <p className="empty-note">No findings for this visit. Mark a polyp or tumor on the 3D colon.</p>
   }
 
   // The doctor changed a value. An AI finding is then marked "edited".

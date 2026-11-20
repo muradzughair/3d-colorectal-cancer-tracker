@@ -12,7 +12,7 @@ The tabs in the top bar choose the page; the web address changes with it (`#/col
 
 | Page | What it does |
 | --- | --- |
-| **3D colon** (`#/colon`) | The chosen visit's colon: blue pins for polyps, a red pin for a tumor. Drag to rotate, scroll to zoom. The findings list is on the right: select a finding to edit its size and segment. **Mark by hand** adds a polyp or tumor by clicking the colon. **Pictures** opens the visit's pictures with the AI marks, and lets the doctor upload a new one. |
+| **3D colon** (`#/colon`) | The chosen visit's colon: blue pins for polyps, a red pin for a tumor. Drag to rotate, scroll to zoom. The findings list is on the right: select a finding to edit its size and segment. **Mark by hand** adds a polyp or tumor by clicking the colon. **Pictures** opens a side panel with the visit's CT and colonoscopy pictures: **Download** saves the original file, and clicking a thumbnail enlarges it with the AI marks. |
 | **Fly-through** (on the 3D colon page) | Select a finding, then **Fly-through**: the camera flies inside the colon to the finding. A demo only: "Demo fly-through, not built from real scan data." It looks plain because the model has no texture inside. |
 | **Over time** (`#/time`) | How a polyp could grow into the colon wall, starting from its measured size (editable), with slow, medium or fast growth. Always says: "Illustration with assumed settings. Not a prediction for any patient." |
 | **Compare dates** (`#/compare`) | Two colons side by side for any two visits (rotating one turns the other), and a table of how each finding's size changed. Findings are matched by kind and segment. |
@@ -25,7 +25,6 @@ Always on screen: the **Demo mode** tag, "Decision-support tool. The doctor make
 
 - The real AI is not ready. The pictures in `public/samples/` are generated **placeholders** (marked "PLACEHOLDER"), and their AI results are **pre-computed** in `public/samples/results.json`. When the app starts for the first time it runs the detector on every picture to build the 4 visits.
 - Everything the doctor changes (edited findings, manual marks, treatment entries, report text) is saved in the browser (`localStorage`), so it stays after a refresh.
-- An uploaded picture only stays until the page is refreshed (browsers cannot keep the file); its findings are kept.
 - To start the demo again from the beginning, clear this site's data in the browser (for example: DevTools → Application → Local storage → delete `colorectal-care-record-v2`).
 
 ## How to run
@@ -70,7 +69,7 @@ src/
     TopBar.tsx            title, tabs, demo tag, decision-support line, visit date dropdown
     ColonViewer.tsx       the 3D colon with labels, pins, manual marking and the fly-through
     FindingsList.tsx      the findings list with size and segment editing
-    ImagePanel.tsx        the pictures panel: the visit's pictures, upload, segment choice
+    ImagePanel.tsx        the pictures panel: thumbnails, Download, enlarged picture
     ImageMarks.tsx        draws boxes and outlines on a picture
     PolypCloseup.tsx      the 3D close-up of the growing polyp (Over time)
     WallCrossSection.tsx  the colon wall drawing with its layers (Over time)

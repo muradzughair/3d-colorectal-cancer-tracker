@@ -72,7 +72,7 @@ export default function ColonPage({ store, visit, selectedId, onSelect, onClearS
         <>
           <div className="top-buttons">
             <button className="button" onClick={() => setPanelOpen(true)}>
-              {pictureCount > 0 ? `Pictures (${pictureCount})` : 'Add picture'}
+              Pictures ({pictureCount})
             </button>
             <button
               className="button button-light"
@@ -114,12 +114,7 @@ export default function ColonPage({ store, visit, selectedId, onSelect, onClearS
 
       {/* The panel stays built (so it keeps its state) but is slid out of view and not usable when closed. */}
       <aside className={`pictures-panel${panelOpen ? ' is-open' : ''}`} inert={!panelOpen} aria-label="Medical pictures">
-        <ImagePanel
-          pictures={visit.pictures}
-          onPicture={(picture) => store.savePicture(visit.id, picture)}
-          onImageFindings={(name, list) => store.setPictureFindings(visit.id, name, list)}
-          onClose={() => setPanelOpen(false)}
-        />
+        <ImagePanel visit={visit} onClose={() => setPanelOpen(false)} />
       </aside>
     </div>
   )

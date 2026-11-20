@@ -40,10 +40,8 @@ function loadSaved(): PatientRecord | null {
 }
 
 function save(record: PatientRecord) {
-  // Uploaded pictures only live in this browser tab, so their address is not saved.
-  const visits = record.visits.map((v) => ({ ...v, pictures: v.pictures.map(({ url: _url, ...rest }) => rest) }))
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...record, visits }))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(record))
   } catch {
     // Storage full or not allowed: the app keeps working, the data just isn't saved.
   }
@@ -77,19 +75,6 @@ export function useRecord() {
   return {
     record,
 
-    // A picture was opened: add it to the visit, or replace the one with the same name.
-    savePicture: (visitId: string, picture: Picture) =>
-      changeVisit(visitId, (v) => ({
-        ...v,
-        pictures: v.pictures.some((p) => p.name === picture.name)
-          ? v.pictures.map((p) => (p.name === picture.name ? picture : p))
-          : [...v.pictures, picture],
-      })),
-
-    // A picture was analysed: replace its old findings with the new ones.
-    setPictureFindings: (visitId: string, imageName: string, list: Finding[]) =>
-      changeVisit(visitId, (v) => ({ ...v, findings: [...v.findings.filter((f) => f.imageName !== imageName), ...list] })),
-
     addFinding: (visitId: string, finding: Finding) => changeVisit(visitId, (v) => ({ ...v, findings: [...v.findings, finding] })),
     updateFinding: (visitId: string, findingId: string, change: Partial<Finding>) =>
       changeVisit(visitId, (v) => ({ ...v, findings: v.findings.map((f) => (f.id === findingId ? { ...f, ...change } : f)) })),
@@ -115,8 +100,7 @@ export function useRecord() {
 
 export type RecordStore = ReturnType<typeof useRecord>
 
-// Where the browser can load a picture from. Null = an uploaded picture from before a refresh.
-export function pictureUrl(picture: Picture): string | null {
-  if (picture.file) return SAMPLES_FOLDER + picture.file
-  return picture.url ?? null
+// Where the browser can load a picture from.
+export function pictureUrl(picture: Picture): string {
+  return SAMPLES_FOLDER + picture.file
 }
