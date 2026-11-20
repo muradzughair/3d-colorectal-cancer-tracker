@@ -1,13 +1,15 @@
 // 3D colon page: the colon of the chosen visit fills the page. Floating over it: the pictures
-// button (top left), the Polyp / Tumor marking buttons (bottom centre) and, on the right edge,
-// the findings list. The pictures panel slides in from the left when the doctor opens it.
+// and fly-through buttons (top left), the Polyp / Tumor marking buttons (bottom centre) and,
+// on the right edge, the findings list. The pictures panel slides in from the left.
+// Fly-through (demo): the camera flies inside the colon to the selected finding.
 import { useState } from 'react'
 import ColonViewer from '../components/ColonViewer'
 import FindingsList from '../components/FindingsList'
 import ImagePanel from '../components/ImagePanel'
 import type { RecordStore } from '../data/record'
 import type { SegmentId } from '../data/segments'
-import { newId } from '../lib/findings'
+import { describeFindings, newId } from '../lib/findings'
+import { getSegment } from '../data/segments'
 import type { Finding, FindingKind, Visit } from '../types'
 
 interface Props {
@@ -22,7 +24,11 @@ interface Props {
 
 export default function ColonPage({ store, visit, selectedId, onSelect, onClearSelection, markMode, onMarkMode }: Props) {
   const [panelOpen, setPanelOpen] = useState(false)
+  const [flyingId, setFlyingId] = useState<string | null>(null) // the finding the fly-through shows
   const findings = visit.findings
+  const names = describeFindings(findings)
+  const selected = findings.find((f) => f.id === selectedId) ?? null
+  const flying = findings.find((f) => f.id === flyingId) ?? null
   const pictureCount = visit.pictures.length
 
   // The doctor clicked the 3D colon in marking mode: add the mark, select it, leave marking mode.
@@ -40,37 +46,71 @@ export default function ColonPage({ store, visit, selectedId, onSelect, onClearS
 
   return (
     <div className="page">
-      <ColonViewer findings={findings} selectedId={selectedId} onSelect={onSelect} markMode={markMode} onMark={addManualMark} />
+      <ColonViewer
+        findings={findings}
+        selectedId={selectedId}
+        onSelect={flying ? () => {} : onSelect}
+        markMode={flying ? null : markMode}
+        onMark={addManualMark}
+        flyTo={flying}
+      />
 
-      <button className="button pictures-button" onClick={() => setPanelOpen(true)}>
-        {pictureCount > 0 ? `Pictures (${pictureCount})` : 'Add picture'}
-      </button>
+      {/* During the fly-through only the inside view, the note and the way back are shown. */}
+      {flying ? (
+        <>
+          <p className="fly-title">
+            Inside view: <strong>{names[flying.id].name}</strong> · {getSegment(flying.segment).name}
+          </p>
+          <div className="fly-bar">
+            <span className="fly-note">Demo fly-through, not built from real scan data.</span>
+            <button className="button" onClick={() => setFlyingId(null)}>
+              Back to outside view
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="top-buttons">
+            <button className="button" onClick={() => setPanelOpen(true)}>
+              {pictureCount > 0 ? `Pictures (${pictureCount})` : 'Add picture'}
+            </button>
+            <button
+              className="button button-light"
+              disabled={!selected}
+              title={selected ? undefined : 'Select a finding in the list first'}
+              onClick={() => selected && setFlyingId(selected.id)}
+            >
+              {selected ? `Fly-through to ${names[selected.id].name}` : 'Fly-through'}
+            </button>
+          </div>
 
-      <div className="mark-bar">
-        <span className="muted">Mark by hand</span>
-        {(['polyp', 'tumor'] as const).map((kind) => (
-          <button
-            key={kind}
-            className={`mark-button mark-button-${kind}${markMode === kind ? ' is-active' : ''}`}
-            onClick={() => onMarkMode(markMode === kind ? null : kind)}
-          >
-            {kind === 'polyp' ? 'Polyp' : 'Tumor'}
-          </button>
-        ))}
-      </div>
+          <div className="mark-bar">
+            <span className="muted">Mark by hand</span>
+            {(['polyp', 'tumor'] as const).map((kind) => (
+              <button
+                key={kind}
+                className={`mark-button mark-button-${kind}${markMode === kind ? ' is-active' : ''}`}
+                onClick={() => onMarkMode(markMode === kind ? null : kind)}
+              >
+                {kind === 'polyp' ? 'Polyp' : 'Tumor'}
+              </button>
+            ))}
+          </div>
 
-      <aside className="findings-column">
-        <h2>
-          Findings <span className="count">{findings.length}</span>
-        </h2>
-        <FindingsList
-          findings={findings}
-          selectedId={selectedId}
-          onSelect={onSelect}
-          onChange={(id, change) => store.updateFinding(visit.id, id, change)}
-          onRemove={remove}
-        />
-      </aside>
+          <aside className="findings-column">
+            <h2>
+              Findings <span className="count">{findings.length}</span>
+            </h2>
+            <FindingsList
+              findings={findings}
+              selectedId={selectedId}
+              onSelect={onSelect}
+              onChange={(id, change) => store.updateFinding(visit.id, id, change)}
+              onRemove={remove}
+            />
+          </aside>
+        </>
+      )}
 
       {/* The panel stays built (so it keeps its state) but is slid out of view and not usable when closed. */}
       <aside className={`pictures-panel${panelOpen ? ' is-open' : ''}`} inert={!panelOpen} aria-label="Medical pictures">

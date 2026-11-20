@@ -1,11 +1,52 @@
 /* Page 1: things that float over the 3D colon (no boxes). */
 
-/* ---------- Pictures button (top left) ---------- */
-.pictures-button {
+/* ---------- Pictures and fly-through buttons (top left) ---------- */
+.top-buttons {
   position: absolute;
   top: 14px;
   left: 24px;
   z-index: 4;
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- Fly-through: title, note and the way back ---------- */
+.fly-title {
+  position: absolute;
+  top: 14px;
+  left: 24px;
+  z-index: 4;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.fly-bar {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 4px 4px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.fly-note {
+  font-size: 12.5px;
+  color: #6d5a1f;
+}
+
+/* Labels and pins are hidden inside the colon: the finding is shown as a bump on the wall. */
+.colon-viewer.is-flying .segment-label,
+.colon-viewer.is-flying .label-lines,
+.colon-viewer.is-flying .pin,
+.colon-viewer.is-flying .pin-caption {
+  display: none !important;
 }
 
 /* ---------- Manual marking buttons (bottom centre) ---------- */

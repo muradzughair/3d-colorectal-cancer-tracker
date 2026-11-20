@@ -216,6 +216,16 @@ textarea {
   background: #ffffff;
 }
 
+.button-light {
+  color: var(--accent);
+  background: #ffffff;
+  border: 1px solid var(--line);
+}
+
+.button-light:hover {
+  background: #f4f7fb;
+}
+
 .button:disabled {
   opacity: 0.45;
   cursor: default;

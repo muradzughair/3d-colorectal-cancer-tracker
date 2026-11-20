@@ -8,7 +8,7 @@ export interface ColonScene {
   camera: THREE.PerspectiveCamera
   renderer: THREE.WebGLRenderer
   controls: OrbitControls
-  onFrame: (callback: () => void) => void // run something every frame (labels, pins)
+  onFrame: (callback: () => void) => () => void // run something every frame; returns a stop function
   dispose: () => void
 }
 
@@ -77,7 +77,7 @@ export function createColonScene(container: HTMLElement, options: { groundShadow
   renderer.setAnimationLoop(() => {
     controls.update()
     renderer.render(scene, camera)
-    callbacks.forEach((cb) => cb())
+    ;[...callbacks].forEach((cb) => cb()) // a copy: a callback may stop itself
   })
 
   return {
@@ -85,7 +85,13 @@ export function createColonScene(container: HTMLElement, options: { groundShadow
     camera,
     renderer,
     controls,
-    onFrame: (cb) => callbacks.push(cb),
+    onFrame: (cb) => {
+      callbacks.push(cb)
+      return () => {
+        const i = callbacks.indexOf(cb)
+        if (i >= 0) callbacks.splice(i, 1) // stopping twice does nothing
+      }
+    },
     dispose: () => {
       renderer.setAnimationLoop(null)
       observer.disconnect()
