@@ -9,8 +9,28 @@
 
 .time-subject {
   grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
   padding-bottom: 8px;
   font-size: 13px;
+}
+
+/* The editable starting size of the polyp. */
+.start-size {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.start-size input {
+  width: 64px;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
 }
 
 /* The 3D close-up sits directly on the page background. */

@@ -56,7 +56,7 @@ export default function App() {
             />
           )}
           {route === 'videos' && visit && <VideosPage key={visit.id} visit={visit} visits={visits} onVisit={chooseVisit} />}
-          {route === 'time' && visit && <TimePage key={visit.id} findings={visit.findings} selectedId={selectedId} />}
+          {route === 'time' && visit && <TimePage key={`${visit.id}-${selectedId}`} findings={visit.findings} selectedId={selectedId} />}
           {route !== 'visits' && !visit && (
             <div className="page page-text">
               <p className="muted">
