@@ -139,3 +139,33 @@
 .pin.is-behind {
   opacity: 0.35;
 }
+
+/* ---------- Before / after marks ---------- */
+
+/* A removed polyp: a small grey mark with a cross. */
+.pin-removed .pin-head {
+  background: #9aa3af;
+}
+
+/* "Not decided": a dashed ring around the pin, in the colour of its kind. */
+.pin-undecided::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  bottom: 0;
+  width: 32px;
+  height: 32px;
+  border: 2px dashed var(--polyp);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.pin-undecided.pin-tumor::before {
+  border-color: var(--tumor);
+}
+
+/* A segment removed by surgery: its label is grey and italic. */
+.segment-label.is-removed {
+  font-style: italic;
+  color: #6b7480;
+}

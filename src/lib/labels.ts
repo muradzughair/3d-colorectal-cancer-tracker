@@ -1,13 +1,14 @@
 // Small segment name labels next to the 3D colon, joined to the model by thin leader lines.
 // Labels sit in two neat columns (left and right of the model) so they never cover it.
 import * as THREE from 'three'
-import { SEGMENTS, type SegmentId } from '../data/segments'
+import { SEGMENTS, type Segment, type SegmentId } from '../data/segments'
 import type { SurfacePoint } from './colonModel'
 
 const ROW_GAP = 20 // minimum vertical space between two labels, in pixels
 const SIDE_GAP = 34 // space between the model and the label columns, in pixels
 
 interface Label {
+  segment: Segment
   anchor: SurfacePoint
   element: HTMLDivElement
   line: SVGLineElement
@@ -29,7 +30,7 @@ export function createLabels(overlay: HTMLElement, anchors: Record<SegmentId, Su
     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
     dot.setAttribute('r', '2')
     svg.append(line, dot)
-    return { anchor: anchors[segment.id], element, line, dot }
+    return { segment, anchor: anchors[segment.id], element, line, dot }
   })
 
   const screen = new THREE.Vector3()
@@ -92,8 +93,18 @@ export function createLabels(overlay: HTMLElement, anchors: Record<SegmentId, Su
     }
   }
 
+  // Mark segments as removed by surgery: their label then says "Removed segment".
+  function setRemoved(ids: SegmentId[]) {
+    for (const { segment, element } of labels) {
+      const removed = ids.includes(segment.id)
+      element.classList.toggle('is-removed', removed)
+      element.textContent = removed ? `${segment.name} · Removed segment` : segment.name
+    }
+  }
+
   return {
     update,
+    setRemoved,
     dispose: () => {
       svg.remove()
       labels.forEach((l) => l.element.remove())

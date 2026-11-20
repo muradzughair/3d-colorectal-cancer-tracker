@@ -96,7 +96,7 @@ export default function App() {
         />
       )}
       {route === 'time' && <TimePage findings={findings} selectedId={selectedId} />}
-      {route === 'compare' && <ComparePage />}
+      {route === 'compare' && <ComparePage findings={findings} plan={plan} />}
       {route === 'patient' && (
         <PatientPage
           patient={patient}
