@@ -75,7 +75,7 @@ export default function App() {
           onImageFindings={setImageFindings}
         />
       )}
-      {route === 'time' && <TimePage />}
+      {route === 'time' && <TimePage findings={findings} selectedId={selectedId} />}
       {route === 'compare' && <ComparePage />}
       {route === 'patient' && <PatientPage />}
 

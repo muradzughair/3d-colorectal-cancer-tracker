@@ -12,7 +12,8 @@ export interface ColonScene {
   dispose: () => void
 }
 
-export function createColonScene(container: HTMLElement): ColonScene {
+// options.groundShadow = false removes the soft shadow under the colon (used by the close-up).
+export function createColonScene(container: HTMLElement, options: { groundShadow?: boolean } = {}): ColonScene {
   // Renderer with anti-aliasing and a sensible pixel ratio (sharp but not too heavy).
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -41,7 +42,7 @@ export function createColonScene(container: HTMLElement): ColonScene {
   scene.add(new THREE.HemisphereLight(0xffffff, 0xd9c6c2, 0.3))
 
   // Soft shadow on the "floor" just under the colon.
-  scene.add(createGroundShadow())
+  if (options.groundShadow !== false) scene.add(createGroundShadow())
 
   // Camera: front-facing, slightly from above.
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100)

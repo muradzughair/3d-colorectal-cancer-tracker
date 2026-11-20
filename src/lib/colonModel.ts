@@ -158,3 +158,37 @@ export function frontPointNear(mesh: THREE.Mesh, target: THREE.Vector3): Surface
   }
   return best!
 }
+
+// The outward direction of the colon surface at a point on it: the normal of the model
+// triangle closest to the point. Used to stand the growth on the surface in the close-up.
+export function surfaceNormalAt(model: ColonModel, point: THREE.Vector3): THREE.Vector3 {
+  const corner = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]
+  const triangle = new THREE.Triangle()
+  const closest = new THREE.Vector3()
+  const smooth = new THREE.Vector3()
+  const best = new THREE.Vector3(0, 0, 1)
+  let bestDistance = Infinity
+
+  for (const mesh of model.meshes) {
+    const positions = mesh.geometry.getAttribute('position')
+    const normals = mesh.geometry.getAttribute('normal')
+    const index = mesh.geometry.index
+    const normalMatrix = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld)
+    const triangleCount = (index ? index.count : positions.count) / 3
+
+    for (let t = 0; t < triangleCount; t++) {
+      const ids = [0, 1, 2].map((k) => (index ? index.getX(t * 3 + k) : t * 3 + k))
+      ids.forEach((id, k) => corner[k].fromBufferAttribute(positions, id).applyMatrix4(mesh.matrixWorld))
+      triangle.set(corner[0], corner[1], corner[2])
+      const distance = triangle.closestPointToPoint(point, closest).distanceToSquared(point)
+      if (distance >= bestDistance) continue
+      bestDistance = distance
+      triangle.getNormal(best)
+      // Make sure it points outwards: it must agree with the smoothed model normals.
+      smooth.set(0, 0, 0)
+      ids.forEach((id) => smooth.add(new THREE.Vector3().fromBufferAttribute(normals, id).applyMatrix3(normalMatrix)))
+      if (best.dot(smooth) < 0) best.negate()
+    }
+  }
+  return best.clone()
+}

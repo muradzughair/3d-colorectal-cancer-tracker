@@ -4,9 +4,10 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { createColonScene, type ColonScene } from '../lib/colonScene'
-import { estimatedPoint, loadColonModel, type ColonModel } from '../lib/colonModel'
+import { loadColonModel, type ColonModel } from '../lib/colonModel'
 import { createLabels } from '../lib/labels'
 import { createPins } from '../lib/pins'
+import { findingPositions } from '../lib/pinPositions'
 import { describeFindings } from '../lib/findings'
 import { getSegment, type SegmentId } from '../data/segments'
 import type { Finding, FindingKind } from '../types'
@@ -97,24 +98,16 @@ export default function ColonViewer({ findings, selectedId, onSelect, markMode, 
   useEffect(() => {
     if (!loaded || !model.current || !pins.current) return
     const names = describeFindings(findings)
-    const countPerSegment: Partial<Record<SegmentId, number>> = {}
+    const places = findingPositions(model.current, findings)
 
     const pinList = findings.map((f) => {
-      let position: THREE.Vector3
-      if (f.position) {
-        position = new THREE.Vector3(...f.position) // manual mark: exact point
-      } else {
-        const index = countPerSegment[f.segment] ?? 0
-        countPerSegment[f.segment] = index + 1
-        position = estimatedPoint(model.current!, f.segment, index)
-      }
       const where = f.position ? 'exact position' : 'estimated position'
       return {
         id: f.id,
         kind: f.kind,
         text: names[f.id].pinText,
         caption: `${names[f.id].name} · ${getSegment(f.segment).name} · ${where}`,
-        position,
+        position: places[f.id],
         selected: f.id === selectedId,
       }
     })
