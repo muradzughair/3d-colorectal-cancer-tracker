@@ -9,6 +9,7 @@ import VideosPage from './pages/VideosPage'
 import TimePage from './pages/TimePage'
 import ComparePage from './pages/ComparePage'
 import TreatmentPage from './pages/TreatmentPage'
+import ReportPage from './pages/ReportPage'
 import { sortedVisits, useRecord } from './data/record'
 import { useRoute } from './lib/route'
 import type { FindingKind } from './types'
@@ -61,6 +62,7 @@ export default function App() {
           {route === 'time' && visit && <TimePage key={`${visit.id}-${selectedId}`} findings={visit.findings} selectedId={selectedId} />}
           {route === 'compare' && visit && <ComparePage visits={visits} visit={visit} onVisit={chooseVisit} />}
           {route === 'treatment' && <TreatmentPage store={store} />}
+          {route === 'report' && visit && <ReportPage key={visit.id} store={store} visit={visit} />}
           {route !== 'visits' && route !== 'treatment' && !visit && (
             <div className="page page-text">
               <p className="muted">
