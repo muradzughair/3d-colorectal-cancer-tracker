@@ -1,37 +1,49 @@
-// Page 1: the 3D colon fills the page. Floating over it: the pictures button (top left),
-// the Polyp / Tumor marking buttons (bottom centre) and, on the right edge, the findings list.
-// The pictures panel slides in from the left when the doctor opens it.
+// 3D colon page: the colon of the chosen visit fills the page. Floating over it: the pictures
+// button (top left), the Polyp / Tumor marking buttons (bottom centre) and, on the right edge,
+// the findings list. The pictures panel slides in from the left when the doctor opens it.
 import { useState } from 'react'
 import ColonViewer from '../components/ColonViewer'
 import FindingsList from '../components/FindingsList'
 import ImagePanel from '../components/ImagePanel'
+import type { RecordStore } from '../data/record'
 import type { SegmentId } from '../data/segments'
-import type { Finding, FindingKind, Picture } from '../types'
+import { newId } from '../lib/findings'
+import type { Finding, FindingKind, Visit } from '../types'
 
 interface Props {
-  findings: Finding[]
+  store: RecordStore
+  visit: Visit
   selectedId: string | null
   onSelect: (id: string) => void
-  onRemove: (id: string) => void
+  onClearSelection: () => void
   markMode: FindingKind | null
-  onToggleMark: (kind: FindingKind) => void
-  onMark: (kind: FindingKind, segment: SegmentId, position: [number, number, number]) => void
-  pictures: Picture[]
-  onPicture: (picture: Picture) => void
-  onImageFindings: (imageName: string, findings: Finding[]) => void
+  onMarkMode: (kind: FindingKind | null) => void
 }
 
-export default function ColonPage(props: Props) {
-  const { findings, markMode, pictures } = props
+export default function ColonPage({ store, visit, selectedId, onSelect, onClearSelection, markMode, onMarkMode }: Props) {
   const [panelOpen, setPanelOpen] = useState(false)
-  const analysed = pictures.filter((p) => p.result).length // pictures the detector gave a result for
+  const findings = visit.findings
+  const pictureCount = visit.pictures.length
+
+  // The doctor clicked the 3D colon in marking mode: add the mark, select it, leave marking mode.
+  const addManualMark = (kind: FindingKind, segment: SegmentId, position: [number, number, number]) => {
+    const mark: Finding = { id: newId(), kind, segment, size: null, source: 'manual', position }
+    store.addFinding(visit.id, mark)
+    onSelect(mark.id)
+    onMarkMode(null)
+  }
+
+  const remove = (id: string) => {
+    store.removeFinding(visit.id, id)
+    if (selectedId === id) onClearSelection()
+  }
 
   return (
     <div className="page">
-      <ColonViewer findings={findings} selectedId={props.selectedId} onSelect={props.onSelect} markMode={markMode} onMark={props.onMark} />
+      <ColonViewer findings={findings} selectedId={selectedId} onSelect={onSelect} markMode={markMode} onMark={addManualMark} />
 
       <button className="button pictures-button" onClick={() => setPanelOpen(true)}>
-        {analysed > 0 ? `Pictures (${analysed})` : 'Add picture'}
+        {pictureCount > 0 ? `Pictures (${pictureCount})` : 'Add picture'}
       </button>
 
       <div className="mark-bar">
@@ -40,7 +52,7 @@ export default function ColonPage(props: Props) {
           <button
             key={kind}
             className={`mark-button mark-button-${kind}${markMode === kind ? ' is-active' : ''}`}
-            onClick={() => props.onToggleMark(kind)}
+            onClick={() => onMarkMode(markMode === kind ? null : kind)}
           >
             {kind === 'polyp' ? 'Polyp' : 'Tumor'}
           </button>
@@ -51,15 +63,15 @@ export default function ColonPage(props: Props) {
         <h2>
           Findings <span className="count">{findings.length}</span>
         </h2>
-        <FindingsList findings={findings} selectedId={props.selectedId} onSelect={props.onSelect} onRemove={props.onRemove} />
+        <FindingsList findings={findings} selectedId={selectedId} onSelect={onSelect} onRemove={remove} />
       </aside>
 
       {/* The panel stays built (so it keeps its state) but is slid out of view and not usable when closed. */}
       <aside className={`pictures-panel${panelOpen ? ' is-open' : ''}`} inert={!panelOpen} aria-label="Medical pictures">
         <ImagePanel
-          pictures={pictures}
-          onPicture={props.onPicture}
-          onImageFindings={props.onImageFindings}
+          pictures={visit.pictures}
+          onPicture={(picture) => store.savePicture(visit.id, picture)}
+          onImageFindings={(name, list) => store.setPictureFindings(visit.id, name, list)}
           onClose={() => setPanelOpen(false)}
         />
       </aside>

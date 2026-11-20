@@ -1,0 +1,142 @@
+// The patient record: one shared place for the patient, the visits, the treatment record and
+// the reports. All pages (and, later, the patient view and the outside-doctor view) read it
+// from here. It is saved in the browser (localStorage), so it stays after a refresh.
+import { useEffect, useState } from 'react'
+import { detect } from '../detector'
+import { findingsFromPicture, newId } from '../lib/findings'
+import { DEMO_ENTRIES, DEMO_PATIENT, DEMO_VISITS } from './demoPatient'
+import type { Finding, Patient, PatientRecord, Picture, ReportText, TreatmentEntry, Visit } from '../types'
+
+const STORAGE_KEY = 'colorectal-care-record-v1'
+export const SAMPLES_FOLDER = `${import.meta.env.BASE_URL}samples/`
+
+// Build the demo record: run the detector on every pre-loaded picture and video.
+async function buildDemoRecord(): Promise<PatientRecord> {
+  const visits: Visit[] = []
+  for (const demo of DEMO_VISITS) {
+    const pictures: Picture[] = []
+    for (const p of demo.pictures) {
+      const result = await detect({ name: p.file, url: SAMPLES_FOLDER + p.file }, p.type)
+      pictures.push({ name: p.name, type: p.type, file: p.file, result, segment: p.segment ?? '' })
+    }
+    let video: Visit['video'] = null
+    if (demo.video) {
+      const result = await detect({ name: demo.video.file, url: SAMPLES_FOLDER + demo.video.file }, 'video')
+      video = { name: demo.video.name, file: demo.video.file, moments: result?.moments ?? [] }
+    }
+    visits.push({
+      id: demo.id,
+      date: demo.date,
+      title: demo.title,
+      tests: demo.tests,
+      pictures,
+      video,
+      findings: pictures.flatMap(findingsFromPicture),
+      addedByDoctor: false,
+    })
+  }
+  return { patient: DEMO_PATIENT, visits, entries: DEMO_ENTRIES, reports: {} }
+}
+
+function loadSaved(): PatientRecord | null {
+  try {
+    const text = localStorage.getItem(STORAGE_KEY)
+    return text ? (JSON.parse(text) as PatientRecord) : null
+  } catch {
+    return null // nothing saved yet, or the browser does not allow storage
+  }
+}
+
+function save(record: PatientRecord) {
+  // Uploaded pictures only live in this browser tab, so their address is not saved.
+  const visits = record.visits.map((v) => ({ ...v, pictures: v.pictures.map(({ url: _url, ...rest }) => rest) }))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...record, visits }))
+  } catch {
+    // Storage full or not allowed: the app keeps working, the data just isn't saved.
+  }
+}
+
+// Visits from the oldest to the newest.
+export function sortedVisits(record: PatientRecord): Visit[] {
+  return [...record.visits].sort((a, b) => a.date.localeCompare(b.date))
+}
+
+// The hook every page uses: the record (null while the demo is being prepared) and the
+// small set of changes the doctor can make to it.
+export function useRecord() {
+  const [record, setRecord] = useState<PatientRecord | null>(loadSaved)
+
+  // First start: prepare the demo patient.
+  useEffect(() => {
+    if (!record) buildDemoRecord().then(setRecord)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only on the first start
+  }, [])
+
+  // Save after every change.
+  useEffect(() => {
+    if (record) save(record)
+  }, [record])
+
+  // Change one visit.
+  const changeVisit = (visitId: string, change: (visit: Visit) => Visit) =>
+    setRecord((r) => r && { ...r, visits: r.visits.map((v) => (v.id === visitId ? change(v) : v)) })
+
+  return {
+    record,
+
+    updatePatient: (change: Partial<Patient>) => setRecord((r) => r && { ...r, patient: { ...r.patient, ...change } }),
+
+    // A new, empty visit. Returns its id.
+    addVisit: (date: string, title: string): string => {
+      const visit: Visit = { id: newId(), date, title, tests: '', pictures: [], video: null, findings: [], addedByDoctor: true }
+      setRecord((r) => r && { ...r, visits: [...r.visits, visit] })
+      return visit.id
+    },
+    removeVisit: (visitId: string) => setRecord((r) => r && { ...r, visits: r.visits.filter((v) => v.id !== visitId) }),
+    updateVisit: (visitId: string, change: Partial<Pick<Visit, 'date' | 'title' | 'tests'>>) =>
+      changeVisit(visitId, (v) => ({ ...v, ...change })),
+
+    // A picture was opened: add it to the visit, or replace the one with the same name.
+    savePicture: (visitId: string, picture: Picture) =>
+      changeVisit(visitId, (v) => ({
+        ...v,
+        pictures: v.pictures.some((p) => p.name === picture.name)
+          ? v.pictures.map((p) => (p.name === picture.name ? picture : p))
+          : [...v.pictures, picture],
+      })),
+
+    // A picture was analysed: replace its old findings with the new ones.
+    setPictureFindings: (visitId: string, imageName: string, list: Finding[]) =>
+      changeVisit(visitId, (v) => ({ ...v, findings: [...v.findings.filter((f) => f.imageName !== imageName), ...list] })),
+
+    addFinding: (visitId: string, finding: Finding) => changeVisit(visitId, (v) => ({ ...v, findings: [...v.findings, finding] })),
+    updateFinding: (visitId: string, findingId: string, change: Partial<Finding>) =>
+      changeVisit(visitId, (v) => ({ ...v, findings: v.findings.map((f) => (f.id === findingId ? { ...f, ...change } : f)) })),
+    removeFinding: (visitId: string, findingId: string) =>
+      changeVisit(visitId, (v) => ({ ...v, findings: v.findings.filter((f) => f.id !== findingId) })),
+
+    addEntry: (entry: Omit<TreatmentEntry, 'id'>) =>
+      setRecord((r) => r && { ...r, entries: [...r.entries, { ...entry, id: newId() }] }),
+    updateEntry: (entryId: string, change: Partial<TreatmentEntry>) =>
+      setRecord((r) => r && { ...r, entries: r.entries.map((e) => (e.id === entryId ? { ...e, ...change } : e)) }),
+    removeEntry: (entryId: string) => setRecord((r) => r && { ...r, entries: r.entries.filter((e) => e.id !== entryId) }),
+
+    updateReport: (visitId: string, change: Partial<ReportText>) =>
+      setRecord(
+        (r) =>
+          r && {
+            ...r,
+            reports: { ...r.reports, [visitId]: { ...(r.reports[visitId] ?? { comments: '', radiologist: '' }), ...change } },
+          },
+      ),
+  }
+}
+
+export type RecordStore = ReturnType<typeof useRecord>
+
+// Where the browser can load a picture from. Null = an uploaded picture from before a refresh.
+export function pictureUrl(picture: Picture): string | null {
+  if (picture.file) return SAMPLES_FOLDER + picture.file
+  return picture.url ?? null
+}

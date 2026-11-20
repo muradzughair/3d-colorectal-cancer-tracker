@@ -93,18 +93,8 @@ export function createLabels(overlay: HTMLElement, anchors: Record<SegmentId, Su
     }
   }
 
-  // Mark segments as removed by surgery: their label then says "Removed segment".
-  function setRemoved(ids: SegmentId[]) {
-    for (const { segment, element } of labels) {
-      const removed = ids.includes(segment.id)
-      element.classList.toggle('is-removed', removed)
-      element.textContent = removed ? `${segment.name} · Removed segment` : segment.name
-    }
-  }
-
   return {
     update,
-    setRemoved,
     dispose: () => {
       svg.remove()
       labels.forEach((l) => l.element.remove())

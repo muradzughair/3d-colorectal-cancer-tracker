@@ -1,13 +1,12 @@
-// The content of the sliding pictures panel: choose a picture (sample or upload), run the
-// detector, and show its marks. Colonoscopy: the AI boxes the polyps and the doctor picks the
-// colon segment. CT scan: the AI outlines the tumor and reports its size and segment.
-// The opened pictures live in App (the `pictures` list), so they are still there when the
-// panel is closed and opened again.
+// The content of the sliding pictures panel: the chosen visit's pictures, and uploading a new
+// one (the detector runs on it). Each picture is shown with its marks. Colonoscopy: the AI
+// boxes the polyps and the doctor picks the colon segment. CT scan: the AI outlines the tumor
+// and reports its size and segment. The pictures are stored with the visit.
 import { useRef, useState } from 'react'
 import { detect } from '../detector'
-import { SAMPLES } from '../data/samples'
+import { pictureUrl } from '../data/record'
 import { SEGMENTS, getSegment, type SegmentId } from '../data/segments'
-import { formatSize, newId } from '../lib/findings'
+import { findingsFromPicture, formatSize } from '../lib/findings'
 import type { Finding, ImageType, Picture } from '../types'
 import ImageMarks from './ImageMarks'
 
@@ -26,9 +25,6 @@ interface Pending {
   url: string
   type: ImageType
 }
-
-// Where the sample pictures are (works locally and on GitHub Pages).
-const SAMPLES_FOLDER = `${import.meta.env.BASE_URL}samples/`
 
 // A colonoscope cannot reach the appendix, so it is not in this list.
 const COLONOSCOPY_SEGMENTS = SEGMENTS.filter((s) => s.id !== 'appendix')
@@ -55,19 +51,9 @@ export default function ImagePanel({ pictures, onPicture, onImageFindings, onClo
     const found = await detect({ name: fileName, url: next.url }, next.type)
     if (thisRequest !== request.current) return
     setPending(null)
-    // If this picture was opened before, keep the segment the doctor chose then.
-    const before = pictures.find((p) => p.name === next.name)
-    onPicture({ ...next, result: found, segment: before?.segment ?? '' })
-
-    if (!found) return onImageFindings(next.name, [])
-    if (next.type === 'ct') {
-      // A CT scan shows where the tumor is, so it goes straight onto the 3D map.
-      const tumor = found.tumor
-      onImageFindings(
-        next.name,
-        tumor ? [{ id: newId(), kind: 'tumor', segment: tumor.segment, size: tumor.size, source: 'ai', imageName: next.name }] : [],
-      )
-    }
+    const picture: Picture = { name: next.name, type: next.type, url: next.url, result: found, segment: '' }
+    onPicture(picture)
+    onImageFindings(next.name, findingsFromPicture(picture)) // CT: the tumor goes straight onto the 3D map
   }
 
   // Look at a picture that was already opened (no new analysis).
@@ -81,17 +67,9 @@ export default function ImagePanel({ pictures, onPicture, onImageFindings, onClo
   // Colonoscopy: once the doctor picks the segment, the polyps go onto the 3D map.
   function chooseSegment(id: SegmentId) {
     if (!picture || !picture.result) return
-    onPicture({ ...picture, segment: id })
-    onImageFindings(
-      picture.name,
-      picture.result.polyps.map((p) => ({ id: newId(), kind: 'polyp', segment: id, size: p.size, source: 'ai', imageName: picture.name })),
-    )
-  }
-
-  function pickSample(file: string) {
-    const sample = SAMPLES.find((s) => s.file === file)!
-    if (pictures.some((p) => p.name === sample.label)) return showPicture(sample.label, sample.type)
-    analyse({ name: sample.label, url: `${SAMPLES_FOLDER}${sample.file}`, type: sample.type }, sample.file)
+    const changed = { ...picture, segment: id }
+    onPicture(changed)
+    onImageFindings(picture.name, findingsFromPicture(changed))
   }
 
   function upload(file: File | undefined) {
@@ -99,13 +77,12 @@ export default function ImagePanel({ pictures, onPicture, onImageFindings, onClo
     analyse({ name: file.name, url: URL.createObjectURL(file), type: uploadType }, file.name)
   }
 
-  // Small thumbnails: the 3 samples, then the pictures the doctor uploaded.
-  const uploaded = pictures.filter((p) => !SAMPLES.some((s) => s.label === p.name))
+  const shownUrl = pending ? pending.url : picture ? pictureUrl(picture) : null
 
   return (
     <div className="image-panel">
       <div className="panel-title">
-        <h2>Medical pictures</h2>
+        <h2>Pictures of this visit</h2>
         <button className="close-button" onClick={onClose} aria-label="Close pictures panel" title="Close">
           ×
         </button>
@@ -134,36 +111,29 @@ export default function ImagePanel({ pictures, onPicture, onImageFindings, onClo
         </label>
       </div>
 
-      <div className="sample-row">
-        {SAMPLES.map((s) => (
-          <button
-            key={s.file}
-            className={`sample-thumb${shown?.name === s.label ? ' is-active' : ''}`}
-            onClick={() => pickSample(s.file)}
-            title={s.label}
-          >
-            <img src={`${SAMPLES_FOLDER}${s.file}`} alt="" />
-            <span>{s.short}</span>
-          </button>
-        ))}
-        {uploaded.map((p) => (
-          <button
-            key={p.name}
-            className={`sample-thumb${shown?.name === p.name ? ' is-active' : ''}`}
-            onClick={() => showPicture(p.name, p.type)}
-            title={p.name}
-          >
-            <img src={p.url} alt="" />
-            <span>{p.name}</span>
-          </button>
-        ))}
-      </div>
+      {pictures.length > 0 && (
+        <div className="sample-row">
+          {pictures.map((p) => (
+            <button
+              key={p.name}
+              className={`sample-thumb${shown?.name === p.name ? ' is-active' : ''}`}
+              onClick={() => showPicture(p.name, p.type)}
+              title={p.name}
+            >
+              {pictureUrl(p) ? <img src={pictureUrl(p)!} alt="" /> : <span className="thumb-missing" />}
+              <span>{p.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="image-stage">
-        {shown ? (
-          <ImageMarks url={shown.url} alt={shown.name} result={result} />
+        {shown && shownUrl ? (
+          <ImageMarks url={shownUrl} alt={shown.name} result={result} />
+        ) : shown ? (
+          <p className="stage-note">This uploaded picture is not kept after a page refresh. Its findings are kept.</p>
         ) : (
-          <p className="stage-note">Pick a sample or upload a {uploadType === 'ct' ? 'CT scan' : 'colonoscopy'} picture.</p>
+          <p className="stage-note">This visit has no pictures yet. Upload a {uploadType === 'ct' ? 'CT scan' : 'colonoscopy'} picture.</p>
         )}
       </div>
 

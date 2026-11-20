@@ -59,7 +59,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  max-width: 130px;
+  max-width: 200px;
   padding: 3px 8px 3px 3px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -85,7 +85,8 @@
   color: var(--text);
 }
 
-.sample-thumb img {
+.sample-thumb img,
+.thumb-missing {
   flex: none;
   width: 30px;
   height: 26px;

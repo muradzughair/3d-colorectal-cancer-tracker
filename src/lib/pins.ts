@@ -10,8 +10,6 @@ export interface PinData {
   caption: string // shown next to the selected pin, e.g. "Polyp 1 · Cecum · estimated position"
   position: THREE.Vector3
   selected: boolean
-  // 'removed' = grey mark for a removed polyp; 'undecided' = dashed ring around the pin
-  variant?: 'removed' | 'undecided'
 }
 
 export function createPins(overlay: HTMLElement, onClick: (id: string) => void) {
@@ -30,7 +28,7 @@ export function createPins(overlay: HTMLElement, onClick: (id: string) => void) 
     pins.forEach((p) => p.element.remove())
     pins = list.map((data) => {
       const element = document.createElement('div')
-      element.className = `pin pin-${data.kind}${data.variant ? ` pin-${data.variant}` : ''}${data.selected ? ' is-selected' : ''}`
+      element.className = `pin pin-${data.kind}${data.selected ? ' is-selected' : ''}`
       element.title = data.caption
       element.innerHTML = `<span class="pin-head">${data.text}</span>`
       element.addEventListener('click', () => onClick(data.id))

@@ -1,5 +1,5 @@
 // Small helpers for showing findings: their names, pin numbers and sizes.
-import type { Finding, Size } from '../types'
+import type { Finding, Picture, Size } from '../types'
 
 export interface FindingDisplay {
   name: string // e.g. "Polyp 2" or "Tumor"
@@ -35,4 +35,20 @@ export function formatSize(size: Size | null): string {
 // Simple unique id for a new finding.
 export function newId(): string {
   return Math.random().toString(36).slice(2, 10)
+}
+
+// The findings the AI reported for one picture. A colonoscopy picture only gives findings
+// once the doctor has chosen its segment; a CT scan reports the tumor's segment itself.
+export function findingsFromPicture(picture: Picture): Finding[] {
+  const result = picture.result
+  if (!result) return []
+  if (picture.type === 'ct') {
+    const tumor = result.tumor
+    return tumor
+      ? [{ id: newId(), kind: 'tumor', segment: tumor.segment, size: tumor.size, source: 'ai', imageName: picture.name }]
+      : []
+  }
+  const segment = picture.segment
+  if (!segment) return []
+  return result.polyps.map((p) => ({ id: newId(), kind: 'polyp', segment, size: p.size, source: 'ai', imageName: picture.name }))
 }

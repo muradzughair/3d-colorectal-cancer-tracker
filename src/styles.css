@@ -80,11 +80,21 @@ textarea {
 
 .topbar {
   display: flex;
+  flex-direction: column;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Two lines: title + notice, then tabs + visit selector. */
+.topbar-line {
+  display: flex;
   align-items: center;
   gap: 14px;
-  padding: 0 24px;
-  min-height: 46px;
-  border-bottom: 1px solid var(--line);
+  min-height: 40px;
+}
+
+.topbar-line + .topbar-line {
+  min-height: 0;
 }
 
 .topbar h1 {
@@ -107,12 +117,15 @@ textarea {
 
 .tabs {
   display: flex;
-  gap: 4px;
-  margin-left: 12px;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+  margin-left: -12px;
+  overflow-x: auto;
 }
 
 .tabs a {
-  padding: 13px 12px 11px;
+  padding: 8px 12px 9px;
   border-bottom: 2px solid transparent;
   font-size: 13.5px;
   font-weight: 500;
@@ -180,4 +193,35 @@ textarea {
 
 .button:hover {
   background: #183f63;
+}
+
+/* The visit selector on the right of the tabs. */
+.visit-select {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.visit-select select {
+  max-width: 340px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  background: #ffffff;
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.small-note {
+  margin-top: 8px;
+  font-size: 12.5px;
 }

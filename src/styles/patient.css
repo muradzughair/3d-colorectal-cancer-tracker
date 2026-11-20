@@ -1,4 +1,5 @@
-/* Page 4: Patient & plan. Clean sections with headings and thin dividers, no boxes. */
+/* Text pages (Patient & visits, Treatment record, Report): clean sections with headings and
+   thin dividers, no boxes. */
 .doc {
   max-width: 1000px;
   margin: 0 auto;
@@ -111,19 +112,81 @@
   vertical-align: middle;
 }
 
-.plan-table td:nth-child(1) {
-  white-space: nowrap;
+/* ---------- Patient & visits: the list of dated visits ---------- */
+.visit-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.plan-table td:nth-child(2) {
-  width: 230px;
+.visit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 10px;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
-.plan-table td:nth-child(3) {
-  width: 160px;
+.visit-row + .visit-row {
+  border-top: 1px solid var(--line);
 }
 
-.plan-note {
-  margin: -6px 0 8px;
+.visit-row:hover {
+  background: rgba(31, 78, 121, 0.04);
+}
+
+.visit-row.is-chosen {
+  background: rgba(31, 78, 121, 0.08);
+}
+
+.visit-number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: 50%;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+
+.visit-row.is-chosen .visit-number {
+  color: #ffffff;
+  background: var(--accent);
+}
+
+.visit-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.visit-top {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.visit-meta {
   font-size: 13px;
+}
+
+.visit-tests {
+  margin-top: 6px;
+  max-width: 720px;
+}
+
+.add-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  margin-top: 14px;
+}
+
+.add-row .add-title {
+  flex: 1;
+  max-width: 380px;
 }

@@ -1,112 +1,68 @@
 // The app shell: top bar, the current page and the footer.
-// All shared data (findings, pictures, selection, marking mode) lives here, so every page sees the same data.
+// The patient record (src/data/record.ts) holds all the data. App only keeps what is on
+// screen right now: the chosen visit, the selected finding and the marking mode.
 import { useState } from 'react'
 import TopBar from './components/TopBar'
+import VisitsPage from './pages/VisitsPage'
 import ColonPage from './pages/ColonPage'
 import TimePage from './pages/TimePage'
-import ComparePage from './pages/ComparePage'
-import PatientPage from './pages/PatientPage'
-import { newId } from './lib/findings'
-import { EMPTY_PLAN_ITEM, type Plan, type PlanItem } from './lib/plan'
+import { sortedVisits, useRecord } from './data/record'
 import { useRoute } from './lib/route'
-import type { SegmentId } from './data/segments'
-import type { Finding, FindingKind, Patient, Picture } from './types'
-
-// The fictional demo patient the page starts with.
-const DEMO_PATIENT: Patient = {
-  name: 'Layla Nasser',
-  age: '58',
-  sex: 'Female',
-  fileNumber: 'DEMO-0001',
-  visitDate: new Date().toISOString().slice(0, 10),
-  history: 'Fictional example: change in bowel habits for 3 months. No earlier colonoscopy.',
-  notes: '',
-}
+import type { FindingKind } from './types'
 
 export default function App() {
   const route = useRoute()
-  const [findings, setFindings] = useState<Finding[]>([])
-  const [pictures, setPictures] = useState<Picture[]>([])
+  const store = useRecord()
+  const [chosenVisitId, setChosenVisitId] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [markMode, setMarkMode] = useState<FindingKind | null>(null)
-  const [patient, setPatient] = useState<Patient>(DEMO_PATIENT)
-  const [plan, setPlan] = useState<Plan>({}) // the treatment plan, by finding id
-  const [followUp, setFollowUp] = useState('') // follow-up date
+
+  const visits = store.record ? sortedVisits(store.record) : []
+  // The chosen visit, or the newest one if none is chosen (or it was removed).
+  const visit = visits.find((v) => v.id === chosenVisitId) ?? visits[visits.length - 1] ?? null
+
+  const chooseVisit = (id: string) => {
+    setChosenVisitId(id)
+    setSelectedId(null) // a finding belongs to one visit
+    setMarkMode(null)
+  }
 
   // Click a finding (or its pin) to select it; click it again to unselect.
   const select = (id: string) => setSelectedId((current) => (current === id ? null : id))
 
-  const remove = (id: string) => {
-    setFindings((list) => list.filter((f) => f.id !== id))
-    setPlan(({ [id]: _removed, ...rest }) => rest) // its plan row goes too
-    if (selectedId === id) setSelectedId(null)
-  }
-
-  // A picture was opened: add it to the list, or replace the one with the same name.
-  const savePicture = (picture: Picture) =>
-    setPictures((list) =>
-      list.some((p) => p.name === picture.name)
-        ? list.map((p) => (p.name === picture.name ? picture : p))
-        : [...list, picture],
-    )
-
-  // A picture was analysed: replace its old findings with the new ones. Findings keep their old
-  // id when they are replaced, so later data linked to them (the treatment plan) is not lost.
-  const setImageFindings = (imageName: string, list: Finding[]) => {
-    setFindings((current) => {
-      const old = current.filter((f) => f.imageName === imageName)
-      const merged = list.map((f, i) => (old[i]?.kind === f.kind ? { ...f, id: old[i].id } : f))
-      return [...current.filter((f) => f.imageName !== imageName), ...merged]
-    })
-    setSelectedId(null)
-  }
-
-  // The doctor clicked the 3D colon in marking mode: add the mark, select it, leave marking mode.
-  const addManualMark = (kind: FindingKind, segment: SegmentId, position: [number, number, number]) => {
-    const mark: Finding = { id: newId(), kind, segment, size: null, source: 'manual', position }
-    setFindings((current) => [...current, mark])
-    setSelectedId(mark.id)
-    setMarkMode(null)
-  }
-
-  // The doctor changed something in one plan row.
-  const changePlan = (findingId: string, change: Partial<PlanItem>) =>
-    setPlan((current) => ({ ...current, [findingId]: { ...(current[findingId] ?? EMPTY_PLAN_ITEM), ...change } }))
-
-  // Choose Polyp or Tumor; choosing the same one again cancels.
-  const toggleMarkMode = (kind: FindingKind) => setMarkMode((current) => (current === kind ? null : kind))
-
   return (
     <div className="app">
-      <TopBar route={route} />
+      <TopBar route={route} visits={visits} visitId={visit?.id ?? null} onVisit={chooseVisit} />
 
-      {/* Only the current page is built, so only one 3D view exists at a time. */}
-      {route === 'colon' && (
-        <ColonPage
-          findings={findings}
-          selectedId={selectedId}
-          onSelect={select}
-          onRemove={remove}
-          markMode={markMode}
-          onToggleMark={toggleMarkMode}
-          onMark={addManualMark}
-          pictures={pictures}
-          onPicture={savePicture}
-          onImageFindings={setImageFindings}
-        />
-      )}
-      {route === 'time' && <TimePage findings={findings} selectedId={selectedId} />}
-      {route === 'compare' && <ComparePage findings={findings} plan={plan} />}
-      {route === 'patient' && (
-        <PatientPage
-          patient={patient}
-          onPatient={(change) => setPatient((current) => ({ ...current, ...change }))}
-          findings={findings}
-          plan={plan}
-          onPlan={changePlan}
-          followUp={followUp}
-          onFollowUp={setFollowUp}
-        />
+      {!store.record ? (
+        <div className="page page-text">
+          <p className="muted">Preparing the demo patient…</p>
+        </div>
+      ) : (
+        <>
+          {/* Only the current page is built, so only one 3D view exists at a time. */}
+          {route === 'visits' && <VisitsPage store={store} visits={visits} visit={visit} onVisit={chooseVisit} />}
+          {route === 'colon' && visit && (
+            <ColonPage
+              key={visit.id}
+              store={store}
+              visit={visit}
+              selectedId={selectedId}
+              onSelect={select}
+              onClearSelection={() => setSelectedId(null)}
+              markMode={markMode}
+              onMarkMode={setMarkMode}
+            />
+          )}
+          {route === 'time' && visit && <TimePage key={visit.id} findings={visit.findings} selectedId={selectedId} />}
+          {route !== 'visits' && !visit && (
+            <div className="page page-text">
+              <p className="muted">
+                There are no visits yet. Add one on the <a href="#/visits">Patient & visits</a> page.
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       <footer className="footer">

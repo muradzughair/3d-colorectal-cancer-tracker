@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { createColonScene, type ColonScene } from '../lib/colonScene'
-import { loadColonModel, setRemovedSegments, type ColonModel } from '../lib/colonModel'
+import { loadColonModel, type ColonModel } from '../lib/colonModel'
 import { createLabels } from '../lib/labels'
 import { createPins } from '../lib/pins'
 import { findingPositions } from '../lib/pinPositions'
@@ -20,22 +20,15 @@ interface Props {
   onSelect: (id: string) => void
   markMode: FindingKind | null // what a click on the colon adds (null = clicks do nothing)
   onMark: (kind: FindingKind, segment: SegmentId, position: [number, number, number]) => void
-  // Only used on the Before / after page:
-  marks?: Record<string, PinMark> // how the pin of a finding is shown (default: normal pin)
-  removedSegments?: SegmentId[] // segments shown greyed out as "Removed segment"
   onScene?: (scene: ColonScene | null) => void // gives the page the 3D scene (to link two views)
 }
 
-// How a pin is drawn on the "after treatment" view.
-export type PinMark = 'removed' | 'undecided' | 'hidden'
-
-export default function ColonViewer({ findings, selectedId, onSelect, markMode, onMark, marks, removedSegments, onScene }: Props) {
+export default function ColonViewer({ findings, selectedId, onSelect, markMode, onMark, onScene }: Props) {
   const canvasHolder = useRef<HTMLDivElement>(null)
   const overlay = useRef<HTMLDivElement>(null)
   const view = useRef<ColonScene | null>(null)
   const model = useRef<ColonModel | null>(null)
   const pins = useRef<ReturnType<typeof createPins> | null>(null)
-  const labelLayer = useRef<ReturnType<typeof createLabels> | null>(null)
   const [loaded, setLoaded] = useState(false)
 
   // Keep the latest click handler in a ref, so the 3D code (built once) always calls the current one.
@@ -61,7 +54,6 @@ export default function ColonViewer({ findings, selectedId, onSelect, markMode, 
       model.current = loadedModel
       scene.scene.add(loadedModel.root)
       const labels = createLabels(overlay.current!, loadedModel.anchors)
-      labelLayer.current = labels
       disposeLabels = labels.dispose
       scene.onFrame(() => {
         const { clientWidth, clientHeight } = canvasHolder.current!
@@ -99,7 +91,6 @@ export default function ColonViewer({ findings, selectedId, onSelect, markMode, 
     return () => {
       cancelled = true
       onSceneRef.current?.(null)
-      labelLayer.current = null
       canvas.removeEventListener('pointerdown', onPointerDown)
       canvas.removeEventListener('pointerup', onPointerUp)
       disposeLabels()
@@ -108,41 +99,22 @@ export default function ColonViewer({ findings, selectedId, onSelect, markMode, 
     }
   }, [])
 
-  // Whenever the findings, the selection or the marks change, redraw the pins.
-  const marksKey = JSON.stringify(marks ?? {})
+  // Whenever the findings or the selection change, redraw the pins.
   useEffect(() => {
     if (!loaded || !model.current || !pins.current) return
     const names = describeFindings(findings)
     const places = findingPositions(model.current, findings)
-
-    const pinList = findings
-      .filter((f) => marks?.[f.id] !== 'hidden')
-      .map((f) => {
-        const mark = marks?.[f.id] as 'removed' | 'undecided' | undefined
-        const where = f.position ? 'exact position' : 'estimated position'
-        const note = mark === 'removed' ? ' · removed' : mark === 'undecided' ? ' · not decided' : ''
-        return {
-          id: f.id,
-          kind: f.kind,
-          text: mark === 'removed' ? '×' : names[f.id].pinText,
-          caption: `${names[f.id].name} · ${getSegment(f.segment).name} · ${where}${note}`,
-          position: places[f.id],
-          selected: f.id === selectedId,
-          variant: mark,
-        }
-      })
-    pins.current.set(pinList)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- marks is tracked through marksKey
-  }, [findings, selectedId, loaded, marksKey])
-
-  // Grey out the segments that surgery removes, and say so on their labels.
-  const removedKey = (removedSegments ?? []).join(',')
-  useEffect(() => {
-    if (!loaded || !model.current) return
-    const removed = removedKey ? (removedKey.split(',') as SegmentId[]) : []
-    setRemovedSegments(model.current, removed)
-    labelLayer.current?.setRemoved(removed)
-  }, [loaded, removedKey])
+    pins.current.set(
+      findings.map((f) => ({
+        id: f.id,
+        kind: f.kind,
+        text: names[f.id].pinText,
+        caption: `${names[f.id].name} · ${getSegment(f.segment).name} · ${f.position ? 'exact position' : 'estimated position'}`,
+        position: places[f.id],
+        selected: f.id === selectedId,
+      })),
+    )
+  }, [findings, selectedId, loaded])
 
   return (
     <div className={`colon-viewer${markMode ? ' is-marking' : ''}`}>
