@@ -26,7 +26,7 @@ export function createColonScene(container: HTMLElement, options: { groundShadow
   // Soft, even "studio" lighting from all directions.
   const pmrem = new THREE.PMREMGenerator(renderer)
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
-  scene.environmentIntensity = 0.35
+  scene.environmentIntensity = 0.4
 
   // Key light: the main light, from the upper front right.
   const key = new THREE.DirectionalLight(0xffffff, 2.4)
@@ -38,8 +38,11 @@ export function createColonScene(container: HTMLElement, options: { groundShadow
   rim.position.set(-3, 2, -4)
   scene.add(rim)
 
-  // Soft fill from above and below.
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xd9c6c2, 0.3))
+  // Soft fill from above and below, and a gentle front fill so the folds are not too dark.
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xd9c6c2, 0.35))
+  const fill = new THREE.DirectionalLight(0xfff6f3, 0.55)
+  fill.position.set(-2.5, 0.5, 4)
+  scene.add(fill)
 
   // Soft shadow on the "floor" just under the colon.
   if (options.groundShadow !== false) scene.add(createGroundShadow())

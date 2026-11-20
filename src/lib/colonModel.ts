@@ -63,10 +63,10 @@ function tissueMaterial(segment: SegmentId): THREE.MeshPhysicalMaterial {
   const color = SEGMENTS.find((s) => s.id === segment)!.color
   return new THREE.MeshPhysicalMaterial({
     color,
-    roughness: 0.45,
-    clearcoat: 0.6, // thin shiny layer on top = moist look
-    clearcoatRoughness: 0.22,
-    sheen: 0.35, // soft velvety highlight at grazing angles
+    roughness: 0.42,
+    clearcoat: 0.7, // thin shiny layer on top = moist look
+    clearcoatRoughness: 0.2,
+    sheen: 0.45, // soft velvety highlight at grazing angles
     sheenColor: new THREE.Color('#ffe2df'),
     sheenRoughness: 0.6,
   })
