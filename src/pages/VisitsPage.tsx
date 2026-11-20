@@ -100,7 +100,7 @@ export default function VisitsPage({ store, visits, visit, onVisit }: Props) {
                   <div className="visit-meta muted">
                     {contentSummary(v)} · {findingSummary(v)}
                   </div>
-                  <label className="field visit-tests" onClick={(e) => e.stopPropagation()}>
+                  <label className="field visit-tests">
                     <span>Tests</span>
                     <input
                       value={v.tests}

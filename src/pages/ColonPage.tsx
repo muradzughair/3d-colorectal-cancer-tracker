@@ -63,7 +63,13 @@ export default function ColonPage({ store, visit, selectedId, onSelect, onClearS
         <h2>
           Findings <span className="count">{findings.length}</span>
         </h2>
-        <FindingsList findings={findings} selectedId={selectedId} onSelect={onSelect} onRemove={remove} />
+        <FindingsList
+          findings={findings}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          onChange={(id, change) => store.updateFinding(visit.id, id, change)}
+          onRemove={remove}
+        />
       </aside>
 
       {/* The panel stays built (so it keeps its state) but is slid out of view and not usable when closed. */}
