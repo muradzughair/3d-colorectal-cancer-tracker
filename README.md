@@ -141,6 +141,9 @@ To plug in a real model, rewrite the body of `detect` so it sends the picture (l
 
 Return `null` if the model gives no result. Then set `DEMO_MODE = false` in the same file to hide the "Demo mode" tag. No other file needs to change.
 
-## Credits
+## References
 
-3D colon model: Human Reference Atlas, Large Intestine (Female), CC-BY 4.0, via NIH 3D.
+1. Human Reference Atlas (HRA). *Large Intestine, Female* (3D reference organ, file `hra-reference-organ-large-intestine-female-v1.2.glb`). NIH 3D, entry 3DPX-020971. License: CC-BY 4.0. https://3d.nih.gov/entries/3DPX-020971 (accessed 19 Nov 2026). Note: this model was not based on direct imaging data.
+2. HRA 3D Reference Object Library. https://humanatlas.io/3d-reference-library
+
+3D colon model shown in the app: Human Reference Atlas, Large Intestine (Female), CC-BY 4.0, via NIH 3D.

@@ -7,5 +7,3 @@ dist
 .DS_Store
 *.log
 
-# Duplicate of public/models/colon.glb (kept on disk, not tracked)
-sbu_f_intestine_large-nih3d.glb
