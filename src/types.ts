@@ -23,6 +23,15 @@ export interface Finding {
   position?: [number, number, number]
 }
 
+// A picture the doctor has opened. It is kept in memory so the doctor can look at it again.
+export interface Picture {
+  name: string // shown to the doctor, and stored on each finding
+  url: string
+  type: ImageType
+  result: DetectionResult | null // null = the detector had no result for it
+  segment: SegmentId | '' // colonoscopy only: the segment the doctor chose
+}
+
 // ---------- What the detector returns (see src/detector.ts) ----------
 
 // Box around a polyp, in pixels of the original image.

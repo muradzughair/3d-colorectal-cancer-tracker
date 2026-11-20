@@ -1,4 +1,4 @@
-// The list of all findings next to the 3D colon. Click a finding to select it.
+// The findings as a slim plain list. Click a finding to select it (and highlight its pin).
 import { getSegment } from '../data/segments'
 import { describeFindings, formatSize } from '../lib/findings'
 import type { Finding } from '../types'
@@ -14,11 +14,7 @@ export default function FindingsList({ findings, selectedId, onSelect, onRemove 
   const names = describeFindings(findings)
 
   if (findings.length === 0) {
-    return (
-      <p className="empty-note">
-        No findings yet. Analyse a picture, or mark a polyp or tumor on the 3D colon.
-      </p>
-    )
+    return <p className="empty-note">No findings yet. Add a picture, or mark a polyp or tumor on the 3D colon.</p>
   }
 
   return (
@@ -38,9 +34,7 @@ export default function FindingsList({ findings, selectedId, onSelect, onRemove 
             <div className="finding-meta">
               {getSegment(f.segment).name} · {formatSize(f.size)}
             </div>
-            <div className="finding-position">
-              {f.source === 'ai' ? `Estimated position · from ${f.imageName}` : 'Exact position · marked on 3D'}
-            </div>
+            <div className="finding-position">{f.position ? 'Exact position' : 'Estimated position'}</div>
           </div>
           {f.source === 'manual' && (
             <button

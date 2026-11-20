@@ -1,0 +1,270 @@
+/* Page 1: things that float over the 3D colon (no boxes). */
+
+/* ---------- Pictures button (top left) ---------- */
+.pictures-button {
+  position: absolute;
+  top: 14px;
+  left: 24px;
+  z-index: 4;
+}
+
+/* ---------- Manual marking buttons (bottom centre) ---------- */
+.mark-bar {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 4px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.mark-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.mark-button::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.mark-button-polyp::before {
+  background: var(--polyp);
+}
+
+.mark-button-tumor::before {
+  background: var(--tumor);
+}
+
+.mark-button:hover {
+  border-color: #b9c4d2;
+}
+
+.mark-button-polyp.is-active {
+  color: #ffffff;
+  background: var(--polyp);
+  border-color: var(--polyp);
+}
+
+.mark-button-tumor.is-active {
+  color: #ffffff;
+  background: var(--tumor);
+  border-color: var(--tumor);
+}
+
+.mark-button.is-active::before {
+  background: #ffffff;
+}
+
+.colon-viewer.is-marking .colon-canvas {
+  cursor: crosshair;
+}
+
+.mark-hint {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: #ffffff;
+  background: rgba(28, 39, 51, 0.82);
+  pointer-events: none;
+}
+
+/* ---------- Findings: a slim plain column on the right edge ---------- */
+.findings-column {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 260px;
+  padding: 14px 24px 56px 12px;
+  overflow-y: auto;
+  pointer-events: none; /* the empty part must not block dragging the 3D colon */
+}
+
+.findings-column > * {
+  pointer-events: auto;
+}
+
+.findings-column h2 {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.count {
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--accent);
+}
+
+.empty-note {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.findings-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.finding {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 6px 9px 8px;
+  border-top: 1px solid var(--line);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+}
+
+.finding:hover {
+  background: rgba(31, 78, 121, 0.04);
+}
+
+.finding-polyp.is-selected {
+  background: var(--polyp-soft);
+  border-left-color: var(--polyp);
+}
+
+.finding-tumor.is-selected {
+  background: var(--tumor-soft);
+  border-left-color: var(--tumor);
+}
+
+.finding-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.badge-polyp {
+  background: var(--polyp);
+}
+
+.badge-tumor {
+  background: var(--tumor);
+}
+
+.badge-tumor:empty::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.finding-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.finding-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.finding-top strong {
+  font-weight: 600;
+}
+
+.source-tag {
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.source-ai {
+  color: #3d4b5c;
+  background: #e6eaf0;
+}
+
+.source-manual {
+  color: #5a4a1a;
+  background: #f6f0de;
+}
+
+.finding-meta {
+  font-size: 13px;
+}
+
+.finding-position {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.remove-button {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  color: var(--tumor);
+  background: var(--tumor-soft);
+}
+
+/* ---------- The pictures panel: slides in from the left over the page ---------- */
+.pictures-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 6;
+  width: min(420px, 92%);
+  background: #ffffff;
+  border-right: 1px solid var(--line);
+  transform: translateX(-100%);
+  visibility: hidden;
+  /* "visibility" waits until the slide-out has finished, then hides the panel completely. */
+  transition: transform 0.28s ease, visibility 0s linear 0.28s;
+}
+
+.pictures-panel.is-open {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform 0.28s ease, visibility 0s;
+}

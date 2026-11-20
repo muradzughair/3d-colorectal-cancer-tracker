@@ -1,0 +1,201 @@
+/* The content of the pictures panel. */
+.image-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 20px 16px;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-title h2 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.close-button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  color: var(--text);
+  background: rgba(31, 78, 121, 0.08);
+}
+
+.image-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.upload-button input {
+  display: none;
+}
+
+.sample-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sample-thumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 130px;
+  padding: 3px 8px 3px 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 11.5px;
+  white-space: nowrap;
+  text-align: left;
+  color: var(--muted);
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.sample-thumb span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sample-thumb:hover {
+  border-color: #b9c4d2;
+}
+
+.sample-thumb.is-active {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.sample-thumb img {
+  flex: none;
+  width: 30px;
+  height: 26px;
+  object-fit: cover;
+  border-radius: 5px;
+  background: #000;
+}
+
+.image-stage {
+  position: relative;
+  flex: 1;
+  min-height: 110px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #0e141b;
+  overflow: hidden;
+}
+
+.stage-note {
+  padding: 16px;
+  font-size: 13px;
+  text-align: center;
+  color: #9aa6b4;
+}
+
+.image-marks {
+  position: absolute;
+  inset: 6px;
+}
+
+.image-marks img,
+.image-marks svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mark-polyp rect:first-child {
+  fill: none;
+  stroke: var(--polyp);
+  stroke-width: 3;
+}
+
+.mark-tumor polygon {
+  fill: rgba(220, 38, 38, 0.18);
+  stroke: var(--tumor);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.mark-polyp .mark-label rect {
+  fill: var(--polyp);
+}
+
+.mark-tumor .mark-label rect {
+  fill: var(--tumor);
+}
+
+.mark-label text {
+  fill: #ffffff;
+  font-weight: 600;
+}
+
+.image-result {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.image-name {
+  font-weight: 600;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 50%;
+  vertical-align: 1px;
+}
+
+.dot-polyp {
+  background: var(--polyp);
+}
+
+.dot-tumor {
+  background: var(--tumor);
+}
+
+.segment-pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.segment-pick span {
+  flex: none;
+  color: var(--muted);
+}
+
+.segment-pick select {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #ffffff;
+}
