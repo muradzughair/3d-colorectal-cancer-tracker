@@ -1,0 +1,639 @@
+/* Patient list, top-bar patient chip and the Patient page. Same no-box style as the rest:
+   content on the page background, thin dividers, small coloured text labels. */
+
+/* ---------- Shared small labels ---------- */
+.demo-data-tag {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #6b5a2e;
+  background: #f3ecd9;
+}
+
+/* Status labels: coloured text only. Never red or blue (those are tumors and polyps). */
+.status-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-surveillance {
+  color: #557a1f;
+}
+
+.status-under-treatment {
+  color: #b7791f;
+}
+
+.status-awaiting-surgery {
+  color: #6b46c1;
+}
+
+.status-post-treatment-follow-up {
+  color: #0f766e;
+}
+
+.status-newly-diagnosed {
+  color: #975a16;
+}
+
+.link-button {
+  padding: 0;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.missing {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.alert-text,
+.alert-text strong {
+  color: var(--tumor);
+}
+
+/* ---------- Top bar: the open patient on the right ---------- */
+.patient-chip {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  font-size: 13px;
+}
+
+.patient-chip a {
+  text-decoration: none;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.patient-chip a:hover strong {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.patient-chip .all-patients {
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ---------- Patient list ---------- */
+.patient-list-page {
+  padding: 22px 32px;
+}
+
+.list-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.list-head h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.search-box {
+  width: 260px;
+  margin-left: auto;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.patient-table th {
+  padding-right: 8px;
+}
+
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sort-button:hover {
+  color: var(--text);
+}
+
+.sort-mark {
+  display: inline-block;
+  width: 9px;
+  font-size: 8px;
+  color: var(--accent);
+}
+
+.patient-row {
+  cursor: pointer;
+}
+
+.patient-row td {
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+.patient-row:hover td,
+.patient-row:focus-visible td {
+  background: rgba(31, 78, 121, 0.05);
+}
+
+.patient-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.diagnosis-cell {
+  max-width: 320px;
+}
+
+/* A small red dot with the word "Allergy". */
+.allergy-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--tumor);
+  white-space: nowrap;
+}
+
+.allergy-mark::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tumor);
+}
+
+.reset-line {
+  margin-top: 22px;
+  font-size: 12.5px;
+}
+
+.reset-line .link-button {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* ---------- Patient page ---------- */
+.profile-page {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* The compact summary strip, always visible at the top while scrolling. */
+.summary-strip {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 32px 9px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(244, 246, 250, 0.97);
+  backdrop-filter: blur(4px);
+}
+
+.summary-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+  font-size: 13px;
+}
+
+.summary-line h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.summary-line .flagged {
+  color: var(--text);
+}
+
+.trend-arrow {
+  vertical-align: -1px;
+  color: var(--accent);
+}
+
+.summary-alerts {
+  font-size: 12.5px;
+}
+
+.profile-body {
+  display: grid;
+  grid-template-columns: 196px minmax(0, 1fr);
+  gap: 28px;
+  max-width: 1360px;
+  padding: 0 32px 40px;
+}
+
+/* The thin section list on the left; it stays in view under the summary strip. */
+.section-nav {
+  position: sticky;
+  top: 92px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 220px);
+  margin-top: 18px;
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+}
+
+.section-nav button {
+  padding: 4px 10px 4px 12px;
+  margin-left: -1px;
+  border: none;
+  border-left: 2px solid transparent;
+  font-size: 12.5px;
+  text-align: left;
+  color: var(--muted);
+  background: none;
+  cursor: pointer;
+}
+
+.section-nav button:hover {
+  color: var(--text);
+}
+
+.section-nav button.is-active {
+  font-weight: 600;
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.profile-content {
+  min-width: 0;
+}
+
+.profile-section {
+  padding: 18px 0 20px;
+  border-top: 1px solid var(--line);
+}
+
+.profile-section:first-child {
+  border-top: none;
+}
+
+.profile-section > h2 {
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.sub-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 14px 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.sub-heading .source-note {
+  display: inline;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.source-note {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.plain-statement {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.plain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.two-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 32px;
+}
+
+/* Key-value grid: label above value, no boxes. */
+.kv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px 28px;
+  margin: 0;
+}
+
+.kv {
+  min-width: 0;
+}
+
+.kv-wide {
+  grid-column: 1 / -1;
+}
+
+.kv dt {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.kv dd {
+  margin: 1px 0 0;
+  font-size: 13.5px;
+}
+
+/* Alerts: red text at the top. */
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+}
+
+.alert {
+  padding-left: 12px;
+  border-left: 3px solid var(--tumor);
+  color: var(--tumor);
+}
+
+.alert .source-note {
+  color: #a36a6a;
+}
+
+.alert-none {
+  padding-left: 15px;
+  color: var(--muted);
+}
+
+/* Tables on the Patient page. */
+.profile-table {
+  font-size: 13px;
+}
+
+.profile-table td {
+  vertical-align: top;
+}
+
+.profile-table .group-row th {
+  padding-top: 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.row-link {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.label-cell {
+  width: 140px;
+  color: var(--muted);
+}
+
+.finding-status {
+  font-weight: 600;
+}
+
+.finding-status-present {
+  color: #b7791f;
+}
+
+.finding-status-removed {
+  color: #2f855a;
+}
+
+.finding-status-biopsied {
+  color: #6b46c1;
+}
+
+.pending {
+  font-weight: 600;
+  color: #b7791f;
+}
+
+.specimen + .specimen {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+
+.specimen h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.specimen h3 .source-note {
+  display: inline;
+}
+
+/* Medications: blood thinners stand out. */
+.med-table tr.is-thinner td {
+  background: #fdf3f3;
+}
+
+.thinner-note {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--tumor);
+}
+
+/* Labs */
+.trend-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.trend {
+  margin: 0;
+  min-width: 0;
+}
+
+.trend figcaption {
+  font-size: 12.5px;
+}
+
+.trend svg {
+  display: block;
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+}
+
+.trend-empty {
+  padding: 26px 0;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.trend-band {
+  fill: rgba(47, 133, 90, 0.09);
+}
+
+.trend-base {
+  stroke: var(--line);
+}
+
+.trend-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.8;
+}
+
+.trend-dot {
+  fill: #ffffff;
+  stroke: var(--accent);
+  stroke-width: 1.8;
+}
+
+.trend-dot.is-flagged {
+  fill: var(--accent);
+}
+
+.trend-axis {
+  font-size: 9.5px;
+  fill: var(--muted);
+}
+
+.trend-tip rect {
+  fill: var(--text);
+}
+
+.trend-tip text {
+  font-size: 10px;
+  fill: #ffffff;
+}
+
+.lab-table {
+  margin-top: 10px;
+}
+
+.lab-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+
+.lab-value {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 78px;
+}
+
+.lab-value strong {
+  font-weight: 600;
+}
+
+.lab-flag {
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #7a5a12;
+}
+
+.lab-date {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.imaging-table td:nth-child(3) {
+  max-width: 380px;
+}
+
+.lifestyle-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(220px, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.team-list li {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  column-gap: 12px;
+}
+
+.team-list .source-note {
+  grid-column: 2;
+}
+
+/* Narrower screens: the section list and grids get tighter. */
+@media (max-width: 1400px) {
+  .profile-body {
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 22px;
+  }
+}
+
+@media (max-width: 1300px) {
+  .patient-table {
+    font-size: 13px;
+  }
+
+  .profile-body,
+  .summary-strip {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}

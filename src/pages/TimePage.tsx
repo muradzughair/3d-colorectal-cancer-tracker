@@ -3,9 +3,11 @@
 // This is an illustration with assumed numbers, NOT a prediction.
 import { useState, type CSSProperties } from 'react'
 import PolypCloseup from '../components/PolypCloseup'
+import NamesToggle from '../components/NamesToggle'
 import WallCrossSection, { WALL_DEPTH, type Growth } from '../components/WallCrossSection'
 import { getSegment } from '../data/segments'
-import { describeFindings, formatSize } from '../lib/findings'
+import { formatSize } from '../lib/findings'
+import { lesionName, type LesionCode } from '../lib/lesions'
 import type { Finding } from '../types'
 
 // ASSUMED values. Edit freely. Years for a polyp left in place to grow from a small polyp
@@ -20,6 +22,7 @@ type Speed = keyof typeof YEARS_TO_OUTER_LAYER
 const SPEEDS: Speed[] = ['slow', 'medium', 'fast']
 
 const EXAMPLE_POLYP_MM = 5 // size of the generic example polyp when no polyp is selected
+const MAX_START_MM = 30 // largest starting size the drawing can show
 
 // Once the growth passes the inner lining it is shown as a tumor (depth in drawing units,
 // matching the layers in WallCrossSection). The 3D growth turns red at the same moment.
@@ -36,18 +39,22 @@ function stageText(progress: number, depth: number): string {
 
 interface Props {
   findings: Finding[]
+  codes: Record<string, LesionCode>
   selectedId: string | null
 }
 
-export default function TimePage({ findings, selectedId }: Props) {
+export default function TimePage({ findings, codes, selectedId }: Props) {
   const [speed, setSpeed] = useState<Speed>('medium')
   const [progress, setProgress] = useState(0) // 0 = now, 1 = end of the time range
 
   // Use the selected polyp, or a generic example polyp if no polyp is selected.
+  // The illustration starts from its measured size; the doctor can change that size here.
   const selected = findings.find((f) => f.id === selectedId && f.kind === 'polyp')
-  const startMm = selected?.size?.unit === 'mm' ? selected.size.value : EXAMPLE_POLYP_MM
+  const measuredMm = selected?.size?.unit === 'mm' ? selected.size.value : EXAMPLE_POLYP_MM
+  const [sizeText, setSizeText] = useState(String(measuredMm))
+  const startMm = Math.min(MAX_START_MM, Math.max(1, Number(sizeText) || measuredMm))
   const subject = selected
-    ? `${describeFindings(findings)[selected.id].name} · ${getSegment(selected.segment).name} · ${formatSize(selected.size)}`
+    ? `${lesionName(selected, codes)} · ${getSegment(selected.segment).name} · ${formatSize(selected.size)}`
     : 'Example polyp in the sigmoid colon (no polyp selected)'
 
   const totalYears = YEARS_TO_OUTER_LAYER[speed]
@@ -65,9 +72,15 @@ export default function TimePage({ findings, selectedId }: Props) {
       <p className="time-subject">
         <span className="muted">Showing:</span> <strong>{subject}</strong>
         <span className="muted"> · A polyp can be selected on the 3D colon page.</span>
+        <label className="start-size">
+          <span className="muted">Starting size</span>
+          <input type="number" min={1} max={MAX_START_MM} step={1} value={sizeText} onChange={(e) => setSizeText(e.target.value)} />
+          <span className="muted">mm</span>
+        </label>
       </p>
 
       <div className="time-closeup">
+        <NamesToggle className="floating-names" />
         <PolypCloseup findings={findings} selectedId={selectedId} radius={radius3d} color={color} />
       </div>
 

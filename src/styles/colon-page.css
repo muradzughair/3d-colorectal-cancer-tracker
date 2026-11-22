@@ -1,11 +1,13 @@
 /* Page 1: things that float over the 3D colon (no boxes). */
 
 /* ---------- Pictures button (top left) ---------- */
-.pictures-button {
+.top-buttons {
   position: absolute;
   top: 14px;
   left: 24px;
   z-index: 4;
+  display: flex;
+  gap: 8px;
 }
 
 /* ---------- Manual marking buttons (bottom centre) ---------- */
@@ -102,6 +104,11 @@
   pointer-events: none; /* the empty part must not block dragging the 3D colon */
 }
 
+.findings-column.with-map {
+  bottom: 236px; /* the list stops above the colon map (it scrolls when long) */
+  padding-bottom: 12px;
+}
+
 .findings-column > * {
   pointer-events: auto;
 }
@@ -162,10 +169,11 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 22px;
+  min-width: 26px;
   height: 22px;
+  padding: 0 4px;
   margin-top: 1px;
-  border-radius: 50%;
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
   color: #ffffff;
@@ -267,4 +275,337 @@
   transform: translateX(0);
   visibility: visible;
   transition: transform 0.28s ease, visibility 0s;
+}
+
+/* The two fields under the selected finding: size and segment. */
+.finding-edit {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.finding-edit label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.finding-edit input,
+.finding-edit select {
+  width: 100%;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+  background: #ffffff;
+}
+
+/* ---------- Outside | Inside switch (top centre) ---------- */
+.view-switch {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  width: 220px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* ---------- Inside view: simulated endoscopy ---------- */
+.inside-view {
+  position: absolute;
+  inset: 0 260px 0 0; /* the findings list stays on the right */
+  background: #000000;
+}
+
+.inside-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* A faint round vignette, like the edge of an endoscope image. */
+.inside-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 48%, transparent 52%, rgba(0, 0, 0, 0.55) 78%, rgba(0, 0, 0, 0.9) 100%);
+}
+
+.inside-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: -34px 0 0 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.inside-label-polyp {
+  background: rgba(37, 99, 235, 0.88);
+}
+
+.inside-label-tumor {
+  background: rgba(220, 38, 38, 0.88);
+}
+
+.inside-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #c9d2dc;
+}
+
+.inside-controls {
+  position: absolute;
+  bottom: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px 5px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.inside-controls .button {
+  padding: 4px 12px;
+  font-size: 12.5px;
+}
+
+.inside-position {
+  min-width: 150px;
+  font-size: 12.5px;
+}
+
+.inside-controls select {
+  max-width: 200px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12.5px;
+  background: #ffffff;
+}
+
+/* The movement hint: fades out after a few seconds ("?" shows it again). */
+.inside-hint {
+  position: absolute;
+  bottom: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  white-space: nowrap;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s;
+}
+
+.inside-hint.is-visible {
+  opacity: 1;
+}
+
+/* The mini-map: bottom left, no box, thin lines. */
+.inside-map {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 4;
+}
+
+.inside-minimap {
+  display: block;
+  cursor: pointer;
+}
+
+.minimap-line {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.minimap-mark {
+  stroke: #ffffff;
+  stroke-width: 1.2;
+}
+
+.minimap-polyp {
+  fill: var(--polyp);
+}
+
+.minimap-tumor {
+  fill: var(--tumor);
+}
+
+.minimap-camera {
+  fill: #ffd166;
+  stroke: #1c2733;
+  stroke-width: 1.2;
+}
+
+.minimap-arrow {
+  stroke: #ffd166;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.inside-note {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  white-space: nowrap;
+  color: #f3e7c4;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- The flat colon map (bottom right of the 3D view, "Map" toggle) ---------- */
+.map-float {
+  position: absolute;
+  right: 18px;
+  bottom: 6px;
+  z-index: 4;
+  width: 240px;
+  pointer-events: none;
+}
+
+.colon-map {
+  margin: 0;
+  pointer-events: auto;
+}
+
+.colon-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.colon-map figcaption {
+  font-size: 10.5px;
+  text-align: center;
+}
+
+.map-tube {
+  fill: none;
+  stroke: #d9a7a3;
+  stroke-width: 13;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.map-tube-core {
+  fill: none;
+  stroke: #f4dcd9;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.map-tick line {
+  stroke: #8f9aa8;
+  stroke-width: 0.9;
+}
+
+.map-tick text {
+  font-size: 10px;
+  fill: var(--muted);
+}
+
+.map-name {
+  font-size: 11px;
+  font-weight: 500;
+  fill: #455161;
+}
+
+.map-mark {
+  cursor: pointer;
+}
+
+.map-mark circle {
+  stroke: #ffffff;
+  stroke-width: 1.5;
+}
+
+.map-mark text {
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.map-mark-polyp circle {
+  fill: var(--polyp);
+}
+
+.map-mark-polyp text {
+  fill: var(--polyp);
+}
+
+.map-mark-tumor circle {
+  fill: var(--tumor);
+}
+
+.map-mark-tumor text {
+  fill: var(--tumor);
+}
+
+.map-mark-removed circle {
+  fill: #b7bfc9;
+}
+
+.map-mark-removed text {
+  fill: #6b7480;
+  text-decoration: line-through;
+}
+
+.map-mark:hover circle,
+.map-mark:focus-visible circle {
+  stroke: var(--text);
+}
+
+/* ---------- Lesion detail card ---------- */
+.lesion-code {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.lesion-code-polyp {
+  background: var(--polyp);
+}
+
+.lesion-code-tumor {
+  background: var(--tumor);
+}
+
+.card-link {
+  grid-column: 1 / -1;
+  justify-self: start;
 }

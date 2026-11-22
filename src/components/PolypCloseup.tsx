@@ -6,6 +6,8 @@ import * as THREE from 'three'
 import { createColonScene } from '../lib/colonScene'
 import { estimatedPoint, loadColonModel, surfaceNormalAt, type ColonModel } from '../lib/colonModel'
 import { findingPositions } from '../lib/pinPositions'
+import { createLabels } from '../lib/labels'
+import { useNamesVisible } from '../lib/namesSetting'
 import type { Finding } from '../types'
 
 const MODEL_URL = `${import.meta.env.BASE_URL}models/colon.glb`
@@ -46,7 +48,10 @@ function cameraSpot(model: ColonModel, point: THREE.Vector3, normal: THREE.Vecto
 
 export default function PolypCloseup({ findings, selectedId, radius, color }: Props) {
   const holder = useRef<HTMLDivElement>(null)
+  const overlay = useRef<HTMLDivElement>(null)
   const growth = useRef<THREE.Mesh | null>(null)
+  const labelsRef = useRef<ReturnType<typeof createLabels> | null>(null)
+  const showNames = useNamesVisible()
   const latest = useRef({ radius, color }) // the newest slider values, for when the model finishes loading
   latest.current = { radius, color }
   const [ready, setReady] = useState(false)
@@ -55,6 +60,7 @@ export default function PolypCloseup({ findings, selectedId, radius, color }: Pr
   useEffect(() => {
     const view = createColonScene(holder.current!, { groundShadow: false })
     let cancelled = false
+    let disposeLabels = () => {}
 
     loadColonModel(MODEL_URL).then((model) => {
       if (cancelled) return
@@ -84,16 +90,29 @@ export default function PolypCloseup({ findings, selectedId, radius, color }: Pr
       view.controls.minDistance = 0.15
       view.controls.maxDistance = 6
       view.controls.update()
+
+      // The colon part names, as on the other 3D views (only those in view are shown).
+      const labels = createLabels(overlay.current!, model.anchors)
+      labelsRef.current = labels
+      disposeLabels = labels.dispose
+      view.onFrame(() => labels.update(view.camera, holder.current!.clientWidth, holder.current!.clientHeight))
       setReady(true)
     })
 
     return () => {
       cancelled = true
       growth.current = null
+      labelsRef.current = null
+      disposeLabels()
       view.dispose()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- built once; the page is rebuilt when it is opened again
   }, [])
+
+  // The "Names" toggle: show or hide the part names.
+  useEffect(() => {
+    labelsRef.current?.setVisible(showNames)
+  }, [showNames, ready])
 
   // Whenever the slider moves, resize and recolour the growth.
   useEffect(() => {
@@ -106,6 +125,7 @@ export default function PolypCloseup({ findings, selectedId, radius, color }: Pr
   return (
     <div className="closeup">
       <div className="colon-canvas" ref={holder} />
+      <div className="colon-overlay" ref={overlay} />
     </div>
   )
 }

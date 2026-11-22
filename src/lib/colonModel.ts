@@ -31,7 +31,6 @@ export async function loadColonModel(url: string): Promise<ColonModel> {
     if (!segment) return
     obj.geometry = smoothGeometry(obj.geometry)
     obj.material = tissueMaterial(segment)
-    obj.userData.tissue = obj.material // remembered, so a greyed-out segment can be restored
     obj.userData.segment = segment
     meshes.push(obj)
   })
@@ -64,10 +63,10 @@ function tissueMaterial(segment: SegmentId): THREE.MeshPhysicalMaterial {
   const color = SEGMENTS.find((s) => s.id === segment)!.color
   return new THREE.MeshPhysicalMaterial({
     color,
-    roughness: 0.45,
-    clearcoat: 0.6, // thin shiny layer on top = moist look
-    clearcoatRoughness: 0.22,
-    sheen: 0.35, // soft velvety highlight at grazing angles
+    roughness: 0.42,
+    clearcoat: 0.7, // thin shiny layer on top = moist look
+    clearcoatRoughness: 0.2,
+    sheen: 0.45, // soft velvety highlight at grazing angles
     sheenColor: new THREE.Color('#ffe2df'),
     sheenRoughness: 0.6,
   })
@@ -192,20 +191,4 @@ export function surfaceNormalAt(model: ColonModel, point: THREE.Vector3): THREE.
     }
   }
   return best.clone()
-}
-
-// Soft grey, slightly see-through material for a segment that is removed by surgery.
-const removedMaterial = new THREE.MeshPhysicalMaterial({
-  color: '#b4bbc6',
-  roughness: 0.6,
-  transparent: true,
-  opacity: 0.3,
-  depthWrite: false,
-})
-
-// Show the given segments greyed out and transparent; all other segments look normal.
-export function setRemovedSegments(model: ColonModel, removed: SegmentId[]) {
-  for (const mesh of model.meshes) {
-    mesh.material = removed.includes(mesh.userData.segment) ? removedMaterial : mesh.userData.tissue
-  }
 }
