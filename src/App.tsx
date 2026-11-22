@@ -1,64 +1,25 @@
-// The app shell: top bar, the current page and the footer.
-// The patient record (src/data/record.ts) holds all the data. App only keeps what is on
-// screen right now: the chosen visit, the selected finding and the marking mode.
-import { useState } from 'react'
+// The app shell: the patient list or the open patient, and the footer.
+// The patient records (src/data/record.ts) hold the data the doctor can change; the patient
+// profiles (src/data/patients) hold the read-only patient file.
 import TopBar from './components/TopBar'
-import ColonPage from './pages/ColonPage'
-import TimePage from './pages/TimePage'
-import ComparePage from './pages/ComparePage'
-import TreatmentPage from './pages/TreatmentPage'
-import ReportPage from './pages/ReportPage'
-import { sortedVisits, useRecord } from './data/record'
+import PatientListPage from './pages/PatientListPage'
+import PatientView from './PatientView'
+import { getPatient } from './data/patients'
 import { useRoute } from './lib/route'
-import type { FindingKind } from './types'
 
 export default function App() {
   const route = useRoute()
-  const store = useRecord()
-  const [chosenVisitId, setChosenVisitId] = useState<string | null>(null)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [markMode, setMarkMode] = useState<FindingKind | null>(null)
-
-  const visits = store.record ? sortedVisits(store.record) : []
-  // The chosen visit, or the newest one if none is chosen (or it was removed).
-  const visit = visits.find((v) => v.id === chosenVisitId) ?? visits[visits.length - 1] ?? null
-
-  const chooseVisit = (id: string) => {
-    setChosenVisitId(id)
-    setSelectedId(null) // a finding belongs to one visit
-    setMarkMode(null)
-  }
-
-  // Click a finding (or its pin) to select it; click it again to unselect.
-  const select = (id: string) => setSelectedId((current) => (current === id ? null : id))
+  const data = route.name === 'patient' ? getPatient(route.patientId) : undefined
 
   return (
     <div className="app">
-      <TopBar route={route} visits={visits} visitId={visit?.id ?? null} onVisit={chooseVisit} />
-
-      {!store.record ? (
-        <div className="page page-text">
-          <p className="muted">Preparing the demo patient…</p>
-        </div>
+      {route.name === 'patient' && data ? (
+        // key: a different patient builds everything again, so nothing of the previous one stays.
+        <PatientView key={data.profile.id} data={data} page={route.page} />
       ) : (
         <>
-          {/* Only the current page is built, so only one 3D view exists at a time. */}
-          {route === 'colon' && visit && (
-            <ColonPage
-              key={visit.id}
-              store={store}
-              visit={visit}
-              selectedId={selectedId}
-              onSelect={select}
-              onClearSelection={() => setSelectedId(null)}
-              markMode={markMode}
-              onMarkMode={setMarkMode}
-            />
-          )}
-          {route === 'time' && visit && <TimePage key={`${visit.id}-${selectedId}`} findings={visit.findings} selectedId={selectedId} />}
-          {route === 'compare' && visit && <ComparePage visits={visits} visit={visit} onVisit={chooseVisit} />}
-          {route === 'treatment' && <TreatmentPage store={store} />}
-          {route === 'report' && visit && <ReportPage key={visit.id} store={store} visit={visit} />}
+          <TopBar />
+          <PatientListPage />
         </>
       )}
 

@@ -1,4 +1,4 @@
-/* Text pages (Treatment record, Report): clean sections with headings and
+/* Text pages: clean sections with headings and
    thin dividers, no boxes. */
 .doc {
   max-width: 1000px;
@@ -86,70 +86,4 @@
   padding: 7px 12px 7px 0;
   border-top: 1px solid var(--line);
   vertical-align: middle;
-}
-
-/* ---------- Treatment record ---------- */
-.progress {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
-  font-size: 13.5px;
-}
-
-.progress-bar {
-  flex: 1;
-  max-width: 420px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--line);
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: #2f855a;
-}
-
-.record-table td:nth-child(1) {
-  width: 150px;
-}
-
-.record-table td:nth-child(3) {
-  width: 130px;
-}
-
-.record-table td:nth-child(4) {
-  width: 26%;
-}
-
-.record-table td:nth-child(5) {
-  width: 60px;
-  text-align: right;
-}
-
-/* Status colours: done = green, in progress = amber, planned = navy. */
-.status-select {
-  font-weight: 600;
-}
-
-.status-select.status-done {
-  color: #2f855a;
-}
-
-.status-select.status-in-progress {
-  color: #b7791f;
-}
-
-.status-select.status-planned {
-  color: var(--accent);
-}
-
-.status-row.status-planned input {
-  font-style: italic;
-}
-
-.new-entry td {
-  border-top: 1px dashed #c9d2dc;
 }

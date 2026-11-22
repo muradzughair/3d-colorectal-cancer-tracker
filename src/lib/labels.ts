@@ -35,11 +35,21 @@ export function createLabels(overlay: HTMLElement, anchors: Record<SegmentId, Su
 
   const screen = new THREE.Vector3()
   const toCamera = new THREE.Vector3()
+  let visible = true
+
+  // Show or hide all names and their lines (the "Names" toggle).
+  function setVisible(show: boolean) {
+    visible = show
+    svg.style.display = show ? '' : 'none'
+    labels.forEach((l) => (l.element.style.display = show ? '' : 'none'))
+  }
 
   // Called every frame: re-place the labels for the current camera angle.
   function update(camera: THREE.Camera, width: number, height: number) {
-    // 1. Where is each anchor on screen, and does it face the camera?
-    const placed = labels.map((label) => {
+    if (!visible) return
+    // 1. Where is each anchor on screen, and does it face the camera? Anchors outside the view
+    //    (when zoomed in close) get no label.
+    const all = labels.map((label) => {
       screen.copy(label.anchor.position).project(camera)
       toCamera.copy(camera.position).sub(label.anchor.position).normalize()
       return {
@@ -50,6 +60,15 @@ export function createLabels(overlay: HTMLElement, anchors: Record<SegmentId, Su
         labelY: 0,
       }
     })
+    const inView = (p: (typeof all)[number]) => p.x >= 0 && p.x <= width && p.y >= 0 && p.y <= height
+    for (const p of all) {
+      const show = inView(p)
+      p.label.element.style.display = show ? '' : 'none'
+      p.label.line.style.display = show ? '' : 'none'
+      p.label.dot.style.display = show ? '' : 'none'
+    }
+    const placed = all.filter(inView)
+    if (placed.length === 0) return
     const centerX = (Math.min(...placed.map((p) => p.x)) + Math.max(...placed.map((p) => p.x))) / 2
     // Keep the label columns inside the view, even when zoomed in.
     const widest = Math.max(...labels.map((l) => l.element.offsetWidth)) + 12
@@ -95,6 +114,7 @@ export function createLabels(overlay: HTMLElement, anchors: Record<SegmentId, Su
 
   return {
     update,
+    setVisible,
     dispose: () => {
       svg.remove()
       labels.forEach((l) => l.element.remove())

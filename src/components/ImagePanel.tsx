@@ -44,7 +44,7 @@ export default function ImagePanel({ visit, onClose }: Props) {
       </div>
 
       {visit.pictures.length === 0 ? (
-        <p className="muted">This visit has no pictures.</p>
+        <p className="muted">No pictures for this visit yet.</p>
       ) : (
         <ul className="picture-grid">
           {visit.pictures.map((p) => (

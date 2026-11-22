@@ -70,3 +70,18 @@ export const CENTERLINE_RADII: number[] = [
   0.0157, 0.0165, 0.0168, 0.0173, 0.0173, 0.0178, 0.0177, 0.0178, 0.0178, 0.0174, 0.0172, 0.0169,
   0.0157, 0.0139, 0.0107, 0.0113, 0.0113, 0.0108, 0.0097, 0.008, 0.007, 0.0082, 0.0086,
 ]
+
+// Which colon part each centerline point lies in, as index ranges (from, to: both included),
+// from the cecum (index 0) to the rectum (last index). Worked out once from the model: each
+// point takes the part of the nearest model surface point (single-point blips at the flexures
+// smoothed out). Used to name the part the Inside view camera is in, and for distances.
+export const CENTERLINE_PARTS: { segment: 'cecum' | 'ascending' | 'hepatic' | 'transverse' | 'splenic' | 'descending' | 'sigmoid' | 'rectum'; from: number; to: number }[] = [
+  { segment: 'cecum', from: 0, to: 7 },
+  { segment: 'ascending', from: 8, to: 27 },
+  { segment: 'hepatic', from: 28, to: 32 },
+  { segment: 'transverse', from: 33, to: 71 },
+  { segment: 'splenic', from: 72, to: 81 },
+  { segment: 'descending', from: 82, to: 133 },
+  { segment: 'sigmoid', from: 134, to: 156 },
+  { segment: 'rectum', from: 157, to: 178 },
+]

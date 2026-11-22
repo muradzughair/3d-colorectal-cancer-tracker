@@ -3,9 +3,11 @@
 // This is an illustration with assumed numbers, NOT a prediction.
 import { useState, type CSSProperties } from 'react'
 import PolypCloseup from '../components/PolypCloseup'
+import NamesToggle from '../components/NamesToggle'
 import WallCrossSection, { WALL_DEPTH, type Growth } from '../components/WallCrossSection'
 import { getSegment } from '../data/segments'
-import { describeFindings, formatSize } from '../lib/findings'
+import { formatSize } from '../lib/findings'
+import { lesionName, type LesionCode } from '../lib/lesions'
 import type { Finding } from '../types'
 
 // ASSUMED values. Edit freely. Years for a polyp left in place to grow from a small polyp
@@ -37,10 +39,11 @@ function stageText(progress: number, depth: number): string {
 
 interface Props {
   findings: Finding[]
+  codes: Record<string, LesionCode>
   selectedId: string | null
 }
 
-export default function TimePage({ findings, selectedId }: Props) {
+export default function TimePage({ findings, codes, selectedId }: Props) {
   const [speed, setSpeed] = useState<Speed>('medium')
   const [progress, setProgress] = useState(0) // 0 = now, 1 = end of the time range
 
@@ -51,7 +54,7 @@ export default function TimePage({ findings, selectedId }: Props) {
   const [sizeText, setSizeText] = useState(String(measuredMm))
   const startMm = Math.min(MAX_START_MM, Math.max(1, Number(sizeText) || measuredMm))
   const subject = selected
-    ? `${describeFindings(findings)[selected.id].name} · ${getSegment(selected.segment).name} · ${formatSize(selected.size)}`
+    ? `${lesionName(selected, codes)} · ${getSegment(selected.segment).name} · ${formatSize(selected.size)}`
     : 'Example polyp in the sigmoid colon (no polyp selected)'
 
   const totalYears = YEARS_TO_OUTER_LAYER[speed]
@@ -77,6 +80,7 @@ export default function TimePage({ findings, selectedId }: Props) {
       </p>
 
       <div className="time-closeup">
+        <NamesToggle className="floating-names" />
         <PolypCloseup findings={findings} selectedId={selectedId} radius={radius3d} color={color} />
       </div>
 

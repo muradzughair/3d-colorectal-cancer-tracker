@@ -3,7 +3,8 @@
 // shader code added:
 //   - folds (haustra): ring-shaped ridges across the colon, every FOLD_SPACING along it
 //   - a fine, uneven surface (bump), made from noise
-//   - faint vein-like lines in the colour
+//   - faint vein-like lines in the colour (not on and around tumors, where the normal vein
+//     pattern is lost)
 // The folds and bumps only change how light falls on the surface (no change to the model).
 // Each vertex needs "along" (its distance along the colon) and "alongDirection" (the way the
 // colon runs there); see insideScene.ts.
@@ -17,6 +18,7 @@ const NOISE = /* glsl */ `
   varying vec3 vLocal; // position on the wall, in scene units
   varying vec3 vAlongDirection; // the way the colon runs, in camera space
   uniform float uFoldSpacing;
+  uniform vec4 uTumors[4]; // tumor positions on the wall (xyz) and how far around them (w)
 
   float hash(vec3 p) {
     p = fract(p * 0.3183099 + 0.1);
@@ -69,7 +71,8 @@ const NOISE = /* glsl */ `
   }
 `
 
-export function createMucosaMaterial(): THREE.MeshPhysicalMaterial {
+// tumors: positions (xyz) and reach (w) of up to 4 tumors; the array may be filled in later.
+export function createMucosaMaterial(tumors: THREE.Vector4[] = []): THREE.MeshPhysicalMaterial {
   const material = new THREE.MeshPhysicalMaterial({
     color: '#d0605d', // pink-red lining
     roughness: 0.38,
@@ -84,6 +87,9 @@ export function createMucosaMaterial(): THREE.MeshPhysicalMaterial {
 
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uFoldSpacing = { value: FOLD_SPACING }
+    // Always 4 entries (unused ones have reach 0).
+    const spots = Array.from({ length: 4 }, (_, i) => tumors[i] ?? new THREE.Vector4(0, 0, 0, 0))
+    shader.uniforms.uTumors = { value: spots }
 
     // Vertex shader: pass the distance along the colon and the model position on.
     shader.vertexShader = shader.vertexShader
@@ -103,6 +109,9 @@ export function createMucosaMaterial(): THREE.MeshPhysicalMaterial {
         '#include <color_fragment>',
         `#include <color_fragment>
         float vein = 1.0 - smoothstep(0.0, 0.035, abs(fbm(vLocal * 38.0) - 0.5));
+        for (int i = 0; i < 4; i++) {
+          if (uTumors[i].w > 0.0) vein *= smoothstep(uTumors[i].w * 0.8, uTumors[i].w * 1.6, distance(vLocal, uTumors[i].xyz));
+        }
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.55, 0.12, 0.16), vein * 0.35);
         diffuseColor.rgb *= 0.45 + 0.55 * foldRidge(); // darker in the grooves between folds`,
       )

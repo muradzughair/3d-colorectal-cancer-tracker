@@ -45,99 +45,93 @@
   border-radius: 4px;
 }
 
-/* ---------- Pins on the 3D colon ---------- */
-
-.pin {
+/* ---------- Lesion markers: leader lines and one-line labels ---------- */
+.lesion-lines {
   position: absolute;
-  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.lesion-lines line {
+  stroke-width: 1;
+  opacity: 0.75;
+}
+
+.lesion-lines line.is-hover {
+  stroke-width: 1.8;
+  opacity: 1;
+}
+
+.lesion-line-polyp {
+  stroke: var(--polyp);
+}
+
+.lesion-line-tumor {
+  stroke: var(--tumor);
+}
+
+.lesion-line-removed {
+  stroke: #8a94a3;
+  stroke-dasharray: 3 2;
+}
+
+.lesion-label {
+  position: absolute;
   top: 0;
   left: 0;
+  z-index: 2;
+  padding: 1px 7px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.94);
   pointer-events: auto;
   cursor: pointer;
   transition: opacity 0.15s;
 }
 
-/* The round head sits just above the point, with a small tip touching the surface. */
-.pin-head {
-  position: absolute;
-  left: 0;
-  bottom: 6px;
-  transform: translateX(-50%);
-  display: grid;
-  place-items: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 4px;
-  border-radius: 999px;
-  border: 2px solid #ffffff;
-  font-size: 11px;
-  font-weight: 700;
+.lesion-label-polyp {
+  color: var(--polyp);
+  border-color: rgba(37, 99, 235, 0.45);
+}
+
+.lesion-label-tumor {
+  color: var(--tumor);
+  border-color: rgba(220, 38, 38, 0.45);
+}
+
+.lesion-label-removed {
+  color: #6b7480;
+  border-color: #c3cad3;
+  text-decoration: line-through;
+  text-decoration-color: rgba(107, 116, 128, 0.6);
+}
+
+.lesion-label.is-hover,
+.lesion-label.is-selected {
+  z-index: 3;
   color: #ffffff;
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.35);
 }
 
-.pin-head::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -7px;
-  transform: translateX(-50%);
-  border: 4px solid transparent;
-  border-top: 5px solid #ffffff;
-}
-
-.pin-polyp .pin-head {
+.lesion-label-polyp.is-hover,
+.lesion-label-polyp.is-selected {
   background: var(--polyp);
 }
 
-.pin-tumor .pin-head {
+.lesion-label-tumor.is-hover,
+.lesion-label-tumor.is-selected {
   background: var(--tumor);
 }
 
-/* A single tumor has no number: show a small white dot instead. */
-.pin-tumor .pin-head:empty::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ffffff;
+.lesion-label-removed.is-hover,
+.lesion-label-removed.is-selected {
+  background: #8a94a3;
 }
 
-.pin.is-selected {
-  z-index: 3;
+/* Labels of markers on the far side of the colon are faded. */
+.lesion-label.is-behind {
+  opacity: 0.4;
 }
-
-.pin.is-selected .pin-head {
-  min-width: 24px;
-  height: 24px;
-  font-size: 12px;
-}
-
-.pin-polyp.is-selected .pin-head {
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25), 0 1px 3px rgba(16, 24, 40, 0.35);
-}
-
-.pin-tumor.is-selected .pin-head {
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.25), 0 1px 3px rgba(16, 24, 40, 0.35);
-}
-
-.pin-caption {
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  left: 0;
-  padding: 2px 7px;
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 6px;
-}
-
-/* Pins on the far side of the colon are faded. */
-.pin.is-behind {
-  opacity: 0.35;
-}
-
-/* ---------- Before / after marks ---------- */
