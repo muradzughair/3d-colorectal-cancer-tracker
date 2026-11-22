@@ -71,8 +71,6 @@ The workflow in `.github/workflows/deploy.yml` builds the app and publishes it e
 
 One-time setup: in the repository on GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**. The site is then at `https://<your-username>.github.io/<repository-name>/`.
 
-The presentation (the `presentation` branch) is published with the app, at `https://<your-username>.github.io/<repository-name>/presentation/`. A change to the presentation branch starts the deploy again automatically.
-
 ## Folder structure
 
 ```

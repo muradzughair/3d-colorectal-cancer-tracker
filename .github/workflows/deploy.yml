@@ -1,5 +1,4 @@
 # Builds the app and publishes it on GitHub Pages every time main is updated.
-# The presentation (presentation branch) is published with it, under /presentation/.
 name: Deploy to GitHub Pages
 
 on:
@@ -30,12 +29,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      # The presentation is one self-contained page: put it at /presentation/.
-      - uses: actions/checkout@v4
-        with:
-          ref: presentation
-          path: presentation-branch
-      - run: mkdir -p dist/presentation && cp presentation-branch/index.html dist/presentation/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
