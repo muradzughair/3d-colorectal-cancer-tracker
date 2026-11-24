@@ -4,7 +4,7 @@ A web platform for hospitals that keeps a colorectal cancer patient's whole hist
 
 The tool is only a helper. **The doctor makes every decision, and the app never suggests a treatment or a medicine.**
 
-This version is the **hospital doctor view** (doctors, the MDT, radiologists) with **five fictional demo patients**. All patient data is invented for the demo (a small "Demo data" tag is shown wherever it appears), but it is medically consistent: dates, drugs, lab values and stages agree with each other. The patient view and the outside-doctor view come later and will reuse the same data (see `src/data`).
+This version is the **hospital doctor view** (doctors, the MDT, radiologists) with **fifteen fictional demo patients**. All patient data is invented for the demo (a small "Demo data" tag is shown wherever it appears), but it is medically consistent: dates, drugs, lab values and stages agree with each other. The patient view and the outside-doctor view come later and will reuse the same data (see `src/data`).
 
 ## Patients
 
@@ -17,8 +17,18 @@ The app opens on the **patient list** (`#/patients`): ID, name, age and sex, dia
 | PT-1003 | Sara Khalil, 47, F | Mid-rectal cancer cT3 N1 M0 (IIIB), chemoradiotherapy done, awaiting low anterior resection. Latex allergy. |
 | PT-1004 | Yousef Mansour, 71, M | Ascending colon cancer, right hemicolectomy pT3 N1b (IIIB), CAPOX done, in follow-up; aspirin, metformin. |
 | PT-1005 | Nadia Qasem, 53, F | Sigmoid cancer with liver metastases (cT4a N2 M1a, IVA), KRAS G12D, on FOLFOX plus bevacizumab. Contrast allergy. |
+| PT-1006 | Fatima Al-Zoubi, 52, F | First screening colonoscopy: three polyps removed (22 mm stalked tubulovillous adenoma, 6 mm adenoma, 4 mm hyperplastic), no cancer; surveillance in 2029. Penicillin allergy. |
+| PT-1007 | Ahmad Khalaf, 61, M | Positive FIT, 35 mm flat ascending colon adenoma (high-grade dysplasia) removed by EMR in pieces; site check clear; on clopidogrel for a coronary stent. |
+| PT-1008 | Mariam Saadeh, 44, F | Lynch syndrome (MLH1): cecal cancer pT3 N0 (IIA), dMMR, right hemicolectomy, follow-up without chemotherapy; yearly colonoscopy. |
+| PT-1009 | Ibrahim Nassar, 66, M | Sigmoid cancer, sigmoid colectomy pT2 N1a (IIIA), CAPOX after surgery: 3 of 4 cycles given, cycle 4 in December 2026. |
+| PT-1010 | Huda Mahmoud, 76, F | Transverse colon cancer cT3 N0 (IIA), anemia treated with IV iron, chronic kidney disease, waiting for surgery on 2026-12-10. Codeine allergy. |
+| PT-1011 | Kareem Abu-Hamdan, 51, M | Low rectal cancer cT3b N1 (IIIB), chemoradiotherapy and CAPOX, complete clinical response: watch and wait with checks every 3 months. |
+| PT-1012 | Rana Haddadin, 63, F | Newly diagnosed ring-shaped hepatic flexure cancer cT4a N1 (IIIB); colonoscopy could not pass; MDT on 2026-11-26. Sulfa allergy. |
+| PT-1013 | Sami Qudah, 57, M | Early cancer (pT1, low risk) inside a 20 mm sigmoid polyp, removed whole by colonoscopy; no surgery; site check clear. |
+| PT-1014 | Noor Bataineh, 36, F | Rectal bleeding from hemorrhoids; 15 mm sessile serrated lesion in the cecum removed by cold EMR; site check in March 2027. Ibuprofen allergy (asthma). |
+| PT-1015 | Walid Shami, 80, M | Descending colon cancer with partial blockage, left hemicolectomy pT4a N0 (IIB), chemotherapy declined; CT every 6 months. |
 
-Patients 2 to 5 have no pictures yet: their findings are written in the data (source "manual").
+Patients 2 to 15 have no pictures yet: their findings are written in the data (source "manual").
 
 Every page of a patient has its own address, for example `#/patients/PT-1003/colon` (`/time`, `/compare`, `/treatment`, `/profile`), so a reload keeps the same patient. The top bar shows the page tabs, and on the right the patient's name and ID (click to open the Patient page) and **All patients**. Opening another patient starts every page fresh: nothing of the previous patient stays on screen.
 
@@ -102,7 +112,9 @@ A simulation, **not a real video and not from patient scan data**. The page alwa
 In the Inside view each polyp and tumor is drawn from its recorded data (`src/lib/lesionMesh.ts`), so the shape follows the report, not a stock model:
 - **Polyps** follow their Paris type: stalked (0-Ip, with a stalk and head), semi-stalked (0-Isp), sessile dome (0-Is), slightly raised plaque (0-IIa), flat (0-IIb), slightly depressed (0-IIc and 0-IIa+IIc) and excavated (0-III), sized from the recorded size. The surface has a fine granular texture and a moist sheen.
 - **Tumors** follow their morphology: polypoid (a heaped, lobulated mass), ulcerated (a raised rolled rim around a crater with pale fibrin), annular (a ring around the wall that narrows the lumen as recorded: narrowed or nearly blocked) and flat. Length and extent around the wall come from the record; the folds around a tumor are pulled towards it.
-- **Go to finding** moves along the colon and stops a few cm before the lesion so it is in view.
+- **Go to finding** moves along the colon and stops a few cm before the lesion so it is in view. A ring-shaped tumor is shown through its opening; a tumor on one side of the wall is shown from nearer the opposite wall, so its face is seen from the front.
+- **Polyp close-up** (Over time page): the same builder draws the polyp. The time slider makes the same polyp bigger (same shape) and gives it a redder tint once it has become a tumor. With no polyp selected, a small sessile polyp (0-Is) is shown as an example.
+- **Speed**: the lesion materials are made once per 3D view and shared by all lesions, and everything is freed when the view is closed. Building a large tumor can take a moment when the Inside view opens.
 
 These are simulated shapes for orientation only. They are not pictures of the patient.
 
@@ -150,7 +162,7 @@ src/
     centerline.ts         the centerline through the colon model, its inner radius, and which part each point is in
     record.ts             the patient records: builds them from the demo data, saves to localStorage, the changes a doctor can make
     demoPatient.ts        PT-1001's 4 visits with pictures and her treatment plan
-    patients/             the five patients: profile (pt1001.ts ... pt1005.ts), visits, treatment plan, lab ranges, care team
+    patients/             the fifteen patients: profile (pt1001.ts ... pt1015.ts), visits, treatment plan, lab ranges, care team, shared helpers (helpers.ts)
     segments.ts           colon segments: names, colours, model part names
   pages/                  one file per page
     ColonPage.tsx         3D colon: Outside | Inside switch, findings list, marking, pictures panel
