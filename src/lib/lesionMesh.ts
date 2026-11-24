@@ -60,8 +60,8 @@ const MUCOSA = new THREE.Color('#c85754') // close to the lining around it
 const POLYP = new THREE.Color('#d8645f') // a little redder and pinker
 const FIBRIN = new THREE.Color('#e3d3a6') // pale yellow-white ulcer base
 const BLOOD = new THREE.Color('#5e0e12') // small dark red bleeding points
-const TUMOR = new THREE.Color('#a6363a') // dark, friable red
-const TUMOR_LIGHT = new THREE.Color('#c4544f')
+const TUMOR = new THREE.Color('#9a2228') // dark, friable red
+const TUMOR_LIGHT = new THREE.Color('#d24a42')
 
 // Polyp colour, with the doctor's NICE type as a visual hint only.
 function polypColor(f: Finding): { color: THREE.Color; pattern: number } {
@@ -126,7 +126,11 @@ export function createLesionKit() {
 
   return {
     polypMaterial: (pattern: number) => material(`polyp-${pattern}`, pattern, 0.34),
-    tumorMaterial: () => material('tumor', 0.6, 0.42),
+    tumorMaterial: () => {
+      const m = material('tumor', 1.3, 0.5)
+      m.transparent = true // only the faded outer edge is see-through
+      return m
+    },
     dispose: () => {
       materials.forEach((m) => m.dispose())
       bumpMap.dispose()
@@ -321,7 +325,8 @@ const DEFAULT_EXTENT: Record<TumorMorphology, number> = {
 export interface TumorFrame {
   // The tumor is built around the colon's (curved) centerline. z: distance along the colon
   // from the tumor's middle; angle: around the wall, 0 = towards the middle of the tumor.
-  wallDistance: (angle: number, z: number) => number // centerline to wall in that direction
+  wallDistance: (angle: number, z: number) => number // centerline to wall in that direction (smoothed)
+  edgeDistance?: (angle: number, z: number) => number // the same, exact (used at the outer edge)
   point: (angle: number, z: number, radius: number, out: THREE.Vector3) => THREE.Vector3 // a point in the scene
   lumenRadius: number // typical distance from the centerline to the wall here (scene units)
 }
@@ -340,7 +345,8 @@ export function buildTumor(f: Finding, MM: number, kit: LesionKit, frame: TumorF
   const left = f.lumen === 'nearly-blocked' ? 0.14 : f.lumen === 'narrowed' ? 0.5 : 0.75
 
   const aSteps = full ? 96 : Math.max(32, Math.round(64 * extent))
-  const zSteps = 44
+  // A ring-shaped tumor has steep faces across the lumen, so it needs many more rows.
+  const zSteps = morphology === 'annular-stenosing' ? 120 : 44
   const marginA = full ? 0 : 0.25 // radians of blending past the edge
   const marginZ = 7 * MM
   const positions: number[] = []
@@ -361,7 +367,10 @@ export function buildTumor(f: Finding, MM: number, kit: LesionKit, frame: TumorF
       const n1 = noise(ca * 2.2, sa * 2.2, v * 1.6)
       const n2 = noise(ca * 7, sa * 7, v * 5)
       // 1 inside the tumor, falling smoothly to 0 at the edge (an irregular edge).
-      const edgeZ = smoothstep(1.18 + 0.12 * n1, 0.82, Math.abs(v))
+      const edgeZ =
+        morphology === 'annular-stenosing'
+          ? smoothstep(1.22 + 0.1 * n1, 0.6, Math.abs(v)) // wider, heaped shoulders
+          : smoothstep(1.18 + 0.12 * n1, 0.82, Math.abs(v))
       const edgeA = full ? 1 : smoothstep(1.15 + 0.12 * n1, 0.8, Math.abs(u))
       const inside = edgeZ * edgeA
       const r = full ? Math.abs(v) : Math.min(1.6, Math.hypot(u, v))
@@ -373,8 +382,9 @@ export function buildTumor(f: Finding, MM: number, kit: LesionKit, frame: TumorF
         case 'polypoid-fungating': {
           // A bulky, heaped, lobulated mass with a partly ulcerated top.
           const H = Math.min(0.5 * lumenMm, 0.38 * lengthMm)
-          h = H * Math.pow(Math.max(0, 1 - r * r), 0.55) * (1 + 0.35 * n1 + 0.15 * n2)
-          ulcer = smoothstep(0.35, 0.1, r) * smoothstep(0.05, 0.2, n1 + 0.15)
+          const lobes = 0.5 * n1 + 0.4 * n2 + 0.25 * noise(ca * 16, sa * 16, v * 11)
+          h = H * Math.pow(Math.max(0, 1 - r * r), 0.55) * (1 + lobes)
+          ulcer = smoothstep(0.6, 0.2, r) * smoothstep(0.0, 0.18, n2 + 0.5 * n1 + 0.08)
           break
         }
         case 'ulcerated': {
@@ -405,7 +415,11 @@ export function buildTumor(f: Finding, MM: number, kit: LesionKit, frame: TumorF
       }
       h *= inside
 
-      const wall = frame.wallDistance(angle, z)
+      let wall = frame.wallDistance(angle, z)
+      // Near the outer edge follow the exact wall, so the tumor grows out of it.
+      if (frame.edgeDistance && inside < 0.4) {
+        wall = THREE.MathUtils.lerp(frame.edgeDistance(angle, z), wall, smoothstep(0.05, 0.4, inside))
+      }
       // At the outer edge the surface starts a little behind the wall, so no edge shows.
       const base = wall + THREE.MathUtils.lerp(2.5, -1.1, smoothstep(0, 0.2, inside)) * MM
       let radius = Math.max(0.12 * frame.lumenRadius, base - h * MM)
@@ -413,6 +427,9 @@ export function buildTumor(f: Finding, MM: number, kit: LesionKit, frame: TumorF
         // Rounded shoulders: ease from the wall to the opening.
         const t = Math.pow(inside, 0.6)
         radius = THREE.MathUtils.lerp(base, Math.min(base, openingMm * MM), t)
+        // Nodules and beads on the shoulders (strongest halfway down the face).
+        const nod = noise(ca * 4, sa * 4, v * 5) + 0.6 * noise(ca * 10, sa * 10, v * 12)
+        radius -= nod * 6 * MM * Math.sin(Math.PI * Math.min(1, t))
       }
       frame.point(angle, z, radius, at)
       positions.push(at.x, at.y, at.z)
@@ -425,12 +442,14 @@ export function buildTumor(f: Finding, MM: number, kit: LesionKit, frame: TumorF
 
       // Natural tumor colours: lining at the edge, dark friable red on the mass, pale fibrin
       // in the ulcer, and a few small dark bleeding points.
-      c.copy(MUCOSA).lerp(TUMOR_LIGHT, inside).lerp(TUMOR, inside * (0.5 + 0.5 * smoothstep(-0.2, 0.3, n3)))
-      if (openingMm > 0) ulcer = Math.max(ulcer, smoothstep(0.15, 0.35, n3) * smoothstep(0.3, 0.7, inside) * 0.8)
+      const n4 = noise(ca * 14, sa * 14, sMm / 3.5)
+      c.copy(MUCOSA).lerp(TUMOR_LIGHT, inside).lerp(TUMOR, inside * (0.35 + 0.65 * smoothstep(-0.3, 0.25, n3 + 0.35 * n4)))
+      if (openingMm > 0) ulcer = Math.max(ulcer, smoothstep(0.06, 0.24, n3 - 0.3 * n4) * smoothstep(0.3, 0.7, inside) * 0.85)
       c.lerp(FIBRIN, ulcer * 0.85 * inside)
       const spot = noise(ca * 19, sa * 19, sMm / 2.5)
       if (spot > 0.36 && inside > 0.5) c.lerp(BLOOD, smoothstep(0.36, 0.45, spot))
-      colors.push(c.r, c.g, c.b)
+      // The outer edge fades out, so the tumor blends into the lining around it.
+      colors.push(c.r, c.g, c.b, smoothstep(0.02, 0.3, inside))
     }
   }
 
@@ -444,7 +463,7 @@ export function buildTumor(f: Finding, MM: number, kit: LesionKit, frame: TumorF
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-  g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+  g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 4))
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
   g.setIndex(index)
   g.computeVertexNormals()

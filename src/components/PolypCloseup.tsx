@@ -1,6 +1,7 @@
 // A 3D close-up of one polyp on the colon. The camera starts right next to the polyp and the
-// doctor can still rotate and zoom. A small growth sits on the colon surface at that point;
-// its size and colour come from the time slider (blue = polyp, red = tumor).
+// doctor can still rotate and zoom. The polyp is drawn with the same shape builder as the
+// Inside view (its Paris type, colour and surface); the time slider only makes the same
+// polyp bigger, and gives it a redder tint once it has become a tumor.
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { createColonScene } from '../lib/colonScene'
@@ -8,6 +9,7 @@ import { estimatedPoint, loadColonModel, surfaceNormalAt, type ColonModel } from
 import { findingPositions } from '../lib/pinPositions'
 import { createLabels } from '../lib/labels'
 import { useNamesVisible } from '../lib/namesSetting'
+import { buildPolyp, createLesionKit, lesionSizeMm } from '../lib/lesionMesh'
 import type { Finding } from '../types'
 
 const MODEL_URL = `${import.meta.env.BASE_URL}models/colon.glb`
@@ -16,8 +18,12 @@ interface Props {
   findings: Finding[]
   selectedId: string | null // the selected polyp; if there is none, a sigmoid example is used
   radius: number // size of the growth in scene units
-  color: string // '#2563eb' (polyp) or '#dc2626' (tumor)
+  color: string // '#2563eb' (still a polyp) or '#dc2626' (has become a tumor)
 }
+
+// When no polyp is selected: a small sessile polyp (Paris 0-Is) as an example.
+const EXAMPLE: Finding = { id: 'closeup-example', kind: 'polyp', segment: 'sigmoid', size: { value: 6, unit: 'mm' }, source: 'manual', paris: '0-Is' }
+const TUMOR_TINT = new THREE.Color('#ff8a80') // multiplies the natural colours: redder, darker
 
 // A camera position near the polyp with a clear view of it. The colon folds over itself, so
 // looking straight along the surface normal can end up behind another part of the colon.
@@ -49,7 +55,7 @@ function cameraSpot(model: ColonModel, point: THREE.Vector3, normal: THREE.Vecto
 export default function PolypCloseup({ findings, selectedId, radius, color }: Props) {
   const holder = useRef<HTMLDivElement>(null)
   const overlay = useRef<HTMLDivElement>(null)
-  const growth = useRef<THREE.Mesh | null>(null)
+  const growth = useRef<THREE.Mesh | null>(null) // the polyp, built 1 unit wide
   const labelsRef = useRef<ReturnType<typeof createLabels> | null>(null)
   const showNames = useNamesVisible()
   const latest = useRef({ radius, color }) // the newest slider values, for when the model finishes loading
@@ -59,6 +65,7 @@ export default function PolypCloseup({ findings, selectedId, radius, color }: Pr
   // Build the 3D scene once: the colon, the growth and the camera next to the polyp.
   useEffect(() => {
     const view = createColonScene(holder.current!, { groundShadow: false })
+    const kit = createLesionKit()
     let cancelled = false
     let disposeLabels = () => {}
 
@@ -71,14 +78,14 @@ export default function PolypCloseup({ findings, selectedId, radius, color }: Pr
       const point = selected ? findingPositions(model, findings)[selected.id] : estimatedPoint(model, 'sigmoid', 0)
       const normal = surfaceNormalAt(model, point)
 
-      // The growth: a flattened ball standing on the surface.
-      const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1, 40, 28),
-        new THREE.MeshPhysicalMaterial({ color: latest.current.color, roughness: 0.4, clearcoat: 0.6, clearcoatRoughness: 0.25 }),
-      )
+      // The polyp, built 1 unit wide (so the slider can scale it), standing on the surface.
+      // Its own material copy, so only this polyp gets the tumor tint.
+      const finding = selected ?? EXAMPLE
+      const mesh = buildPolyp(finding, 1 / lesionSizeMm(finding), kit)
+      mesh.material = (mesh.material as THREE.MeshPhysicalMaterial).clone()
       mesh.position.copy(point)
       mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
-      mesh.scale.set(latest.current.radius, latest.current.radius * 0.55, latest.current.radius)
+      applySlider(mesh, latest.current.radius, latest.current.color)
       view.scene.add(mesh)
       growth.current = mesh
 
@@ -101,7 +108,12 @@ export default function PolypCloseup({ findings, selectedId, radius, color }: Pr
 
     return () => {
       cancelled = true
+      if (growth.current) {
+        growth.current.geometry.dispose()
+        ;(growth.current.material as THREE.Material).dispose()
+      }
       growth.current = null
+      kit.dispose()
       labelsRef.current = null
       disposeLabels()
       view.dispose()
@@ -114,12 +126,11 @@ export default function PolypCloseup({ findings, selectedId, radius, color }: Pr
     labelsRef.current?.setVisible(showNames)
   }, [showNames, ready])
 
-  // Whenever the slider moves, resize and recolour the growth.
+  // Whenever the slider moves, resize (the same shape, bigger) and tint the polyp.
   useEffect(() => {
     const mesh = growth.current
     if (!ready || !mesh) return
-    mesh.scale.set(radius, radius * 0.55, radius)
-    ;(mesh.material as THREE.MeshPhysicalMaterial).color.set(color)
+    applySlider(mesh, radius, color)
   }, [ready, radius, color])
 
   return (
@@ -128,4 +139,12 @@ export default function PolypCloseup({ findings, selectedId, radius, color }: Pr
       <div className="colon-overlay" ref={overlay} />
     </div>
   )
+}
+
+// Size from the slider (radius in scene units; the mesh is 1 unit wide), and a redder tint
+// once the growth has become a tumor.
+function applySlider(mesh: THREE.Mesh, radius: number, color: string) {
+  mesh.scale.setScalar(radius * 2)
+  const tumor = color.toLowerCase() === '#dc2626'
+  ;(mesh.material as THREE.MeshPhysicalMaterial).color.copy(tumor ? TUMOR_TINT : new THREE.Color('#ffffff'))
 }

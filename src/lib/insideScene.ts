@@ -134,13 +134,16 @@ export async function createInsideScene(container: HTMLElement, findings: Findin
     // Distance to the wall in one direction. A ray can slip through a small gap in the model
     // and hit another loop of the colon, so the result is kept near the usual inner radius.
     const innerRadius = CENTERLINE_RADII[Math.round((k / (tube.points.length - 1)) * (CENTERLINE_RADII.length - 1))] * scale
-    const rayDistance = (angle: number, z: number) => {
+    const rayDistance = (angle: number, z: number, most = 1.5) => {
       frameAt(z)
       direction.copy(across).multiplyScalar(Math.cos(angle)).addScaledVector(up, Math.sin(angle))
       wallRay.set(origin, direction)
       const d = wallRay.intersectObject(coarseWall, false)[0]?.distance ?? innerRadius
-      return Math.min(innerRadius * 1.5, Math.max(innerRadius * 0.7, d))
+      return Math.min(innerRadius * most, Math.max(innerRadius * 0.6, d))
     }
+    // At the tumor's outer edge the exact wall is used (in a bend it can be far from the
+    // centerline on the outer side), so the tumor always grows out of the visible wall.
+    const edgeDistance = (angle: number, z: number) => rayDistance(angle, z, 2.6)
     // Single rays catch folds and small gaps, which makes the tumor surface jump (flat slabs).
     // So the wall distance is sampled on a coarse grid, smoothed, and read back smoothly.
     const GA = 24
@@ -177,7 +180,7 @@ export async function createInsideScene(container: HTMLElement, findings: Findin
       return out.copy(origin).addScaledVector(across, Math.cos(angle) * radius).addScaledVector(up, Math.sin(angle) * radius)
     }
     const lumenRadius = [0, 1, 2, 3, 4, 5].reduce((sum, i) => sum + wallDistance((i / 6) * Math.PI * 2, 0), 0) / 6
-    const mesh = buildTumor(finding, MM, kit, { wallDistance, point, lumenRadius })
+    const mesh = buildTumor(finding, MM, kit, { wallDistance, edgeDistance, point, lumenRadius })
     lesionMeshes.push(mesh)
 
     // Around the tumor: no fine veins, and the folds pulled towards it.
@@ -222,11 +225,26 @@ export async function createInsideScene(container: HTMLElement, findings: Findin
     camera,
     canvas: renderer.domElement,
     tube,
-    findings: placed.map(({ id, point }) => ({
-      id,
-      point,
-      viewFrom: viewingSpot(tube, tubeIndex(findings.find((x) => x.id === id)!, point), point, isVisibleFrom),
-    })),
+    findings: placed.map(({ id, point }) => {
+      const f = findings.find((x) => x.id === id)!
+      const k = tubeIndex(f, point)
+      // A ring-shaped tumor is looked at through its opening (the middle of the colon), from
+      // a few cm before its near edge.
+      const ring = f.kind === 'tumor' && f.morphology === 'annular-stenosing'
+      const target = ring ? tube.points[k].clone() : point
+      const nearCm = ring ? Math.ceil((f.lengthMm ?? 40) / 20) + 3 : f.kind === 'tumor' ? 6 : 0
+      const viewFrom = viewingSpot(tube, k, target, isVisibleFrom, nearCm)
+      if (f.kind === 'tumor' && !ring) {
+        // Look at a tumor on one side from nearer the opposite wall, so its face (and an
+        // ulcer crater behind a raised rim) is seen from the front rather than from below.
+        const i = nearestIndex(tube.points, viewFrom)
+        const side = point.clone().sub(tube.points[i])
+        side.addScaledVector(tube.tangents[i], -side.dot(tube.tangents[i]))
+        const moved = viewFrom.clone().addScaledVector(side.normalize(), -0.4 * tube.radii[i])
+        if (isVisibleFrom(moved, point)) viewFrom.copy(moved)
+      }
+      return { id, point: target, viewFrom }
+    }),
     onFrame: (cb) => callbacks.push(cb),
     isVisible: (point) => isVisibleFrom(camera.position, point),
     dispose: () => {
@@ -328,10 +346,17 @@ function pullFolds(wall: THREE.Mesh, at: THREE.Vector3, tumorAlong: number, reac
 // Where the camera stops for "Go to finding": a centerline point about 5 cm along the colon
 // from the finding, on the anal side (the way a colonoscope comes in), with nothing in between.
 // If that is blocked, a little nearer or further, or on the other side.
-function viewingSpot(tube: ColonTube, k: number, point: THREE.Vector3, isVisibleFrom: (from: THREE.Vector3, point: THREE.Vector3) => boolean): THREE.Vector3 {
+function viewingSpot(
+  tube: ColonTube,
+  k: number,
+  point: THREE.Vector3,
+  isVisibleFrom: (from: THREE.Vector3, point: THREE.Vector3) => boolean,
+  nearCm = 0, // stay at least this far away (cm)
+): THREE.Vector3 {
   const step = tube.length / (tube.points.length - 1) // scene units between two points
   const last = tube.points.length - 1
-  for (const cm of [5, 4, 6, 3, 7, -5, -4, -6, 2, -3]) {
+  const tries = nearCm > 0 ? [nearCm, nearCm + 1, nearCm - 1, nearCm + 2, -nearCm] : [5, 4, 6, 3, 7, -5, -4, -6, 2, -3]
+  for (const cm of tries) {
     const i = Math.min(last, Math.max(0, Math.round(k + (cm * 10 * MM) / step)))
     if (isVisibleFrom(tube.points[i], point)) return tube.points[i].clone()
   }
